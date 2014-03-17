@@ -10,6 +10,5 @@
     <description>Zero dependency helper/utility library.</description>
     <language>en-US</language>
     <projectUrl>https://github.com/KyleGobel/Chronos/</projectUrl>
-    <licenseUrl>http://xunit.codeplex.com/license</licenseUrl>
   </metadata>
 </package>
