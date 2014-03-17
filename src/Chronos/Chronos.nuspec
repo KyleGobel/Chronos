@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  For more info on this file format visit http://docs.nuget.org/docs/reference/nuspec-reference.
+-->
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">  
+  <metadata>
+    <id>Chronos</id>
+    <version>0.0.0</version>
+    <authors>Kyle Gobel</authors>
+    <description>Zero dependency helper/utility library.</description>
+    <language>en-US</language>
+    <projectUrl>https://github.com/KyleGobel/Chronos/</projectUrl>
+    <licenseUrl>http://xunit.codeplex.com/license</licenseUrl>
+  </metadata>
+</package>
