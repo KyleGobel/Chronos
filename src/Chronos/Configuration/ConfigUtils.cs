@@ -13,6 +13,7 @@ namespace Chronos.Configuration
         private const string ErrorAppSettingNotFound = "Unable to find App Setting: {0}";
         private const string ErrorConnectionStringNotFound = "Unable to find Connection String: {0}";
         private const string ErrorCreatingType = "Error creating type {0} from text '{1}";
+        private const string ConfigNullValue = "{null}";
         public static string GetAppSetting(string key)
         {
             var value = ConfigurationManager.AppSettings[key];
@@ -30,6 +31,15 @@ namespace Chronos.Configuration
                 throw new ConfigurationErrorsException(string.Format(ErrorConnectionStringNotFound, key));
 
             return value.ConnectionString;
+        }
+
+        public static T GetAppSetting<T>(string key, T defaultValue)
+        {
+            var value = ConfigurationManager.AppSettings[key];
+
+            if (value == null) return defaultValue;
+
+            return ConfigNullValue.EndsWith(value) ? default(T) : ParseTextValue<T>(value);
         }
 
 
