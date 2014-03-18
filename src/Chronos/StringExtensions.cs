@@ -36,5 +36,10 @@ namespace Chronos
         {
             return String.Join(delimeter, items.ToArray());
         }
+
+        public static string Fmt(this string value, params object[] args)
+        {
+            return string.Format(value, args);
+        }
     }
 }
