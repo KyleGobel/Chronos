@@ -19,6 +19,15 @@ namespace Test
             Assert.Equal("wellThisShouldBeEasy", result);
         }
 
+        [Fact(DisplayName = "Converts string already pascal cased")]
+        public void StringInPascalCase()
+        {
+            const string testString = "EmailAddress";
+            const string expectedResult = "emailAddress";
+            var result = testString.ToCamelCase();
+
+            Assert.Equal(expectedResult, result);
+        }
         [Fact (DisplayName = "Returns an empty string when the input is null or empty")]
         public void EmptyOrNullStringReturnsEmptyString()
         {

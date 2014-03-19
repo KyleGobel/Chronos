@@ -17,9 +17,12 @@ namespace Chronos
 
         public static string ToCamelCase(this string value)
         {
-            var str = value.ToTitleCase();
-            if (string.IsNullOrEmpty(str))
+            if (string.IsNullOrEmpty(value))
                 return string.Empty;
+
+            var str = default(string);
+            str = value.Contains(" ") ? value.ToTitleCase() : value;
+
             var firstPart = str[0].ToString(CultureInfo.InvariantCulture).ToLower();
             var secondPart = str.Substring(1);
 
