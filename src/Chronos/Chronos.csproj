@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\ConfigUtils.cs" />
+    <Compile Include="ConsoleTemplate.cs" />
     <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="EnumerableExtensions.cs" />
