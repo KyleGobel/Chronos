@@ -33,6 +33,8 @@ namespace Chronos.Configuration
             return value.ConnectionString;
         }
 
+
+
         public static T GetAppSetting<T>(string key, T defaultValue)
         {
             var value = ConfigurationManager.AppSettings[key];
@@ -40,6 +42,27 @@ namespace Chronos.Configuration
             if (value == null) return defaultValue;
 
             return ConfigNullValue.EndsWith(value) ? default(T) : ParseTextValue<T>(value);
+        }
+
+        /// <summary>
+        /// Adds or Updates the current exe config file key with the value
+        /// uses the values ToString method to save the value
+        /// </summary>
+        public static void UpdateExeAppSetting<T>(string key, T value)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var appSettings = config.AppSettings.Settings;
+            if (appSettings[key] == null)
+            {
+                appSettings.Add(key, value.ToString());
+            }
+            else
+            {
+                appSettings[key].Value = value.ToString();
+            }
+
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection(config.AppSettings.SectionInformation.Name);
         }
 
 
