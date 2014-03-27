@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CamelCaseTests.cs" />
+    <Compile Include="DateTimeTests.cs" />
     <Compile Include="DictionaryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
