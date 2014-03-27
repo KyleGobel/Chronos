@@ -7,7 +7,7 @@
     <id>Chronos</id>
     <version>0.0.0</version>
     <authors>Kyle Gobel</authors>
-    <description>Zero dependency helper/utility library.</description>
+    <description>A Helper/Utility library only depending on the .net framework</description>
     <language>en-US</language>
     <projectUrl>https://github.com/KyleGobel/Chronos/</projectUrl>
   </metadata>
