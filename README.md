@@ -36,7 +36,7 @@ const long timeStamp = 1388534400;
 DateTime dateTime = timeStamp.FromUnixTimeStamp();
 ```
 
-*IsBetween*
+**IsBetween**
 
 The IsBetween method will tell you if a date is between two other dates, if you'd like it to also compare the times, then you can set the optional third parameter ``compareTime`` to true
 ```cs
@@ -50,7 +50,7 @@ var jan4th = DateTime.Parse("2010-1-4");
 //true
 jan2nd.IsBetween(startDate, endDate);
 
-/false
+//false
 jan4th.IsBetween(startdate, endDate);
 
 
@@ -76,7 +76,7 @@ testDate.IsBetween(startDate, endDate, true); //false
 String Extensions
 =================
 
-*toCamelCase*
+**toCamelCase**
 ```cs
 var testStr = "convert this to camel case";
 
@@ -89,7 +89,7 @@ testStr = "AlsoWorksWhenThereAreNoSpaces";
 testStr.ToCamelCase();
 ```
 
-*Fmt*
+**Fmt**
 Just a shortcut method for string.Format()
 
 ```
@@ -100,7 +100,7 @@ var last = "Gobel";
 "First Name: {0}, Last Name: {1}".Fmt(first, last);
 ```
 
-*Join*
+**Join**
 combines a list of strings together with a delimeter, shortcut for string.Join
 
 ```cs
@@ -109,7 +109,7 @@ var listOfStrings = new List<string>{ "Item 1", "Second Item", "Item 3", "Last I
 
 ```
 
-*IsBlank*
+**IsBlank**
 shortcut for IsNullOrWhitespace
 
 ```cs
@@ -124,13 +124,21 @@ testString2.IsBlank(); //false
 Enumerable Extensions
 ===========================
 
-*ForEach*
+**ForEach**
 
 Used to just peform an Action on every item in an enumerable
 
-*DistinctBy*
+**DistinctBy**
 
 Used to ``Distinct`` on a certain property, rather than having to group by and selecting first,
 this implementation uses a HashSet
 
+
+App.Config or Web.Config helper methods
+==========================
+View source, will show examples soon
+
+Console Application Helper Templates
+==========================
+View source, will show example soon
 
