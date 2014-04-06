@@ -14,6 +14,16 @@ namespace Chronos
             return date.Date.AddDays(1).AddTicks(-1);
         }
 
+        public static DateTime StartOfWeek(this DateTime date)
+        {
+            return date.Date.AddDays(-(int)date.DayOfWeek);
+        }
+
+        public static DateTime EndOfWeek(this DateTime date)
+        {
+            return date.Date.AddDays(7 - (int)date.DayOfWeek);
+        }
+
         /// <summary>
         /// Converts a System.DateTime object to Unix timestamp
         /// </summary>

@@ -12,14 +12,14 @@ namespace Test
         [Trait("DateTime Extensions", "StartOfDay")]
         public class StartOfDayMethod
         {
-             [Fact(DisplayName = "Start of day returns start of day")]
+            [Fact(DisplayName = "Start of day returns start of day")]
             public void StartOfDay()
             {
                 var anyDate = new DateTime(2014, 1, 3, 3, 24, 50);
                 var expectedResult = new DateTime(anyDate.Year, anyDate.Month, anyDate.Day, 0, 0, 0);
 
                 Assert.Equal(expectedResult, anyDate.StartOfDay());
-            }   
+            }
         }
 
         [Trait("DateTime Extensions", "EndOfDay")]
@@ -39,6 +39,32 @@ namespace Test
 
 
                 Assert.Equal(expectedResult, anyDate.EndOfDay());
+            }
+        }
+
+        [Trait("DateTime Extensions", "StartOfWeek")]
+        public class StartOfWeekMethod
+        {
+            [Fact(DisplayName = "StartOfWeek return the start of the week")]
+            public void StartOfWeek()
+            {
+                var anyDate = new DateTime(2014, 1, 3, 3, 24, 50);
+                var expectedResult = new DateTime(2013, 12, 29, 0, 0, 0);
+
+                Assert.Equal(expectedResult, anyDate.StartOfWeek());
+            }
+        }
+
+        [Trait("DateTime Extensions", "EndOfWeek")]
+        public class EndOfWeekMethod
+        {
+            [Fact(DisplayName = "EndOfWeek returns that weeks Saturday")]
+            public void EndOfWeek()
+            {
+                var anyDate = new DateTime(2014, 1, 3, 3, 24, 50);
+                var expectedResult = DateTime.Parse("2014-01-04 23:59:59.99999999");
+
+                Assert.Equal(expectedResult, anyDate.EndOfWeek());
             }
         }
 
@@ -68,7 +94,7 @@ namespace Test
         }
 
         [Trait("DateTime Extensions", "IsBetween")]
-        public class IsBetweenMethod 
+        public class IsBetweenMethod
         {
             [Fact(DisplayName = "Returns true when between two days")]
             public void IsBetweenValues()
@@ -89,18 +115,18 @@ namespace Test
 
                 DateTime testValue = new DateTime(2010, 1, 4);
 
-                Assert.False(testValue.IsBetween(start, end));               
+                Assert.False(testValue.IsBetween(start, end));
             }
 
             [Fact(DisplayName = "Returns true when between two times")]
-           public void BetweenTimes() 
+            public void BetweenTimes()
             {
-                DateTime start = new DateTime(2010, 1, 1, 1,0,0);
+                DateTime start = new DateTime(2010, 1, 1, 1, 0, 0);
                 DateTime end = new DateTime(2010, 1, 1, 3, 0, 0);
 
                 DateTime testValue = new DateTime(2010, 1, 1, 2, 0, 0);
 
-                Assert.True(testValue.IsBetween(start, end, true));                              
+                Assert.True(testValue.IsBetween(start, end, true));
             }
 
             [Fact(DisplayName = "Returns false when not between two times")]
@@ -111,7 +137,7 @@ namespace Test
 
                 DateTime testValue = DateTime.Parse("2010-1-1 4:00 AM");
 
-                Assert.False(testValue.IsBetween(start, end, true));                                             
+                Assert.False(testValue.IsBetween(start, end, true));
             }
 
         }
