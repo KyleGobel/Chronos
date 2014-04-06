@@ -29,7 +29,7 @@ var testDate = new DateTime(2014, 1, 1);
 //2013-12-29 0:0:0
 testDate.StartOfWeek();
 
-//2014-1-4 23 23:59:59.9999999
+//2014-1-4 23:59:59.9999999
 testDate.EndOfWeek();
 ```
 
