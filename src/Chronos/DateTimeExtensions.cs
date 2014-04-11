@@ -56,5 +56,15 @@ namespace Chronos
                dt.Date >= startDate.Date && dt.Date <= endDate.Date;
         }
 
+        public static DateTime StartOfLastMonth(this DateTime from)
+        {
+            return new DateTime(from.Date.Year, from.Date.Month, 1).AddMonths(-1);
+        }
+
+        public static DateTime EndOfLastMonth(this DateTime from)
+        {
+            return new DateTime(from.Date.Year, from.Date.Month, 1).AddDays(-1);
+        }
+
     }
 }
