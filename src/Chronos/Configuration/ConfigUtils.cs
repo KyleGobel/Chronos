@@ -45,6 +45,14 @@ namespace Chronos.Configuration
         }
 
         /// <summary>
+        /// Returns AppSetting[key] if exists otherwise defaultValue
+        /// </summary>
+        public static string GetAppSetting(string key, string defaultValue)
+        {
+            return ConfigurationManager.AppSettings[key] ?? defaultValue;
+        }
+
+        /// <summary>
         /// Adds or Updates the current exe config file key with the value
         /// uses the values ToString method to save the value
         /// </summary>
