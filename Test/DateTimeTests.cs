@@ -62,7 +62,7 @@ namespace Test
             public void EndOfWeek()
             {
                 var anyDate = new DateTime(2014, 1, 3, 3, 24, 50);
-                var expectedResult = DateTime.Parse("2014-01-04 23:59:59.99999999");
+                var expectedResult = DateTime.Parse("2014-01-04 23:59:59.9999999");
 
                 Assert.Equal(expectedResult, anyDate.EndOfWeek());
             }

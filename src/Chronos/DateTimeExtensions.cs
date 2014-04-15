@@ -21,7 +21,7 @@ namespace Chronos
 
         public static DateTime EndOfWeek(this DateTime date)
         {
-            return date.Date.AddDays(7 - (int)date.DayOfWeek);
+            return date.Date.AddDays(7 - (int)date.DayOfWeek).AddTicks(-1);
         }
 
         /// <summary>
