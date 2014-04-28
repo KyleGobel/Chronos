@@ -18,7 +18,7 @@
     <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
     <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion)</Version>
     <UnstableTag Condition="$(RELEASE) == ''">-unstable</UnstableTag>
-    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(UnstableTag)</PackageVersion>
+    <PackageVersion Condition="$(BuildRunner) == ''">$(MajorVersion).$(MinorVersion).$(PatchVersion)$(UnstableTag)</PackageVersion>
     <EnvVersion>$(MajorVersion).$(MinorVersion)$(PatchVersion)</EnvVersion>
   </PropertyGroup>
    <Target Name="Default" DependsOnTargets="BuildSolutions">
