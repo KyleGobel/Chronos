@@ -9,6 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{50901484-CF50-46C8-A16E-105D8E78E775}"
 	ProjectSection(SolutionItems) = preProject
+		..\build\build.proj = ..\build\build.proj
 		..\NuGet\Chronos.nuspec = ..\NuGet\Chronos.nuspec
 	EndProjectSection
 EndProject
