@@ -14,14 +14,16 @@
     <TestDir>$(BuildSolutionDir)/test</TestDir>
     <XUnit>$(BuildSolutionDir)/lib/tests/xunit-console/xunit.console.clr4.x86.exe</XUnit>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
-    <NuGetPath>$(BuildSolutionDir)/.nuget/nuget.exe</NuGetPath>
+    <NuGetPath>$(SrcDir)/.nuget/nuget.exe</NuGetPath>
     <NuGetPackageDir>$(BuildSolutionDir)/NuGet/</NuGetPackageDir>
     <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion)</Version>
     <UnstableTag Condition="$(RELEASE) == ''">-unstable</UnstableTag>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(UnstableTag)</PackageVersion>
     <EnvVersion>$(MajorVersion).$(MinorVersion)$(PatchVersion)</EnvVersion>
   </PropertyGroup>
-   <Target Name="Default" DependsOnTargets="BuildSolutions" />
+   <Target Name="Default" DependsOnTargets="BuildSolutions">
+      <CallTarget Targets="NugetPack"/>
+   </Target>
 
    <Target Name="BuildSolutions">
     <Message Text="$(BUILD_NUMBER)" Importance="High"/>
@@ -29,9 +31,15 @@
       Properties="Configuration=$(Configuration)" />
   </Target>
 
-   <Target Name="UnitTests" DependsOnTargets="$(BuildSolutions)">
+   <Target Name="UnitTests" DependsOnTargets="BuildSolutions">
       <Message Text="$(Version)" Importance="High" />
       <Exec Command="$(XUnit) $(TestDir)/Test.dll"/>
+  </Target>
+
+  <Target Name="NugetPack" DependsOnTargets="BuildSolutions">
+    <Message Text="_____________________________Running Nuget Pack Target___________________________________" Importance="High"/>
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/Chronos/chronos.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
   </Target>
 
 </Project>

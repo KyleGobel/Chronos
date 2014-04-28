@@ -2,7 +2,7 @@
 
 set target=%1
 if "%target%" == "" (
-   set target=UnitTests
+   set target=Default
 )
 
 if "%target%" == "NuGetPack" (
@@ -11,5 +11,8 @@ if "%target%" == "NuGetPack" (
 		exit;
 	)
 )
+if NOT "%BuildRunner%" == "MyGet" (
+	set PatchVersion=1
+)
 
-%WINDIR%\Microsoft.NET\Framework\v4.0.30319\msbuild Build\build.proj /target:%target% /v:diag /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
+%WINDIR%\Microsoft.NET\Framework\v4.0.30319\msbuild Build\build.proj /target:%target% /v:diag /fl /flp:LogFile=msbuild.log;Verbosity=Diag /nr:false

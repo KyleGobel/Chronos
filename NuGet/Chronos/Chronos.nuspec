@@ -12,7 +12,7 @@
     <projectUrl>https://github.com/KyleGobel/Chronos/</projectUrl>
   </metadata>
   <files>
-    <file src="lib\**\*.*" target="lib"/> 
+    <file src="..\..\bin\*.*" target="lib"/>
     <file src="..\..\src\Chronos\**\*.cs" target="src" />
   </files>
 </package>

@@ -8,7 +8,6 @@ namespace Test
     [Trait("DateTime Extensions", "")]
     public class DateTimeTests
     {
-
         [Trait("DateTime Extensions", "StartOfDay")]
         public class StartOfDayMethod
         {
