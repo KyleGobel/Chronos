@@ -37,7 +37,7 @@
   </Target>
 
   <Target Name="NugetPack" DependsOnTargets="BuildSolutions">
-    <Message Text="_____________________________Running Nuget Pack Target___________________________________" Importance="High"/>
+    <Message Text="Running Nuget Pack Target" Importance="High"/>
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/Chronos/chronos.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
   </Target>
