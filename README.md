@@ -88,7 +88,7 @@ Bulk Inserter
 ===========================
 Makes it easy and fast to do bulk inserts
 
-```
+```cs
 public class Person
 {
   public string FullName {get; set;}
