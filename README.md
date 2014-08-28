@@ -97,19 +97,37 @@ public class Person
 
 public void Main() 
 {
-  var bcp = new BulkInserter("connectionStringOrName");
-  
-  //maps all properties to lowercase_underscore format column names 
-  //FullName - full_name
-  //Age - age
-  bcp.ColumnMappings.MapColumnsAsLowercaseUnderscore();
-  
-  List<Person> data = /* some data */;
+  var bcp = new BulkInserter<Person>("connectionStringOrName");                   //1.
+  bcp.ColumnMappings.MapColumnsAsLowercaseUnderscore();                           //2.
+  List<Person> data = /* some data */;                                            //3.
   
   //will bulk copy all the Persons in data to the db table dbo.people
-  bcp.Insert(data, "dbo.people");
+  bcp.Insert(data, "people");
 }
 ```
+- **Line 1** Creates a new BulkInsertObject of type ``Person``, passing in either a connection string name, or the connection string itself
+- **Line 2** Maps all properties to lowercase_underscore format column names 
+    ```
+       -- Source Property = ``FullName`` 
+       -- Destination Column =  ``full_name``
+
+       -- Source Property = ``Age`` 
+       -- Destination Column =  ``age``
+    ```
+
+       Other options are
+       ``bcp.ColumnMappings.MapColumnsAsCamelCase();``
+   
+       Also you can map single columns fluently if that's your thing
+   
+    ```cs
+       bcp.ColumnMappings
+            .MapColumn(col => col.FullName, "Name")
+            .MapColumn(col => col.Age, "YearsAlive");
+    ```
+
+- **Line 3** Any list of ``Person`` to insert
+- **Line 4** Run the bulk copy, inserting all data in the ``data`` object, into the table named ``people``
 
 Enumerable Extensions
 ===========================
