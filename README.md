@@ -100,9 +100,7 @@ public void Main()
   var bcp = new BulkInserter<Person>("connectionStringOrName");                   //1.
   bcp.ColumnMappings.MapColumnsAsLowercaseUnderscore();                           //2.
   List<Person> data = /* some data */;                                            //3.
-  
-  //will bulk copy all the Persons in data to the db table dbo.people
-  bcp.Insert(data, "people");
+  bcp.Insert(data, "people");                                                     //4.
 }
 ```
 - **Line 1** Creates a new BulkInsertObject of type ``Person``, passing in either a connection string name, or the connection string itself
