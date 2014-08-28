@@ -8,7 +8,7 @@ namespace Test
         [Fact]
         public void Test()
         {
-            var result = ConfigUtils.GetAppSetting("test", "");
+            var result = ConfigUtilities.GetAppSetting("test", "");
         }
     }
 }

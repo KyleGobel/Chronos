@@ -44,7 +44,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CamelCaseTests.cs" />
+    <Compile Include="BulkInserterTests.cs" />
     <Compile Include="ConfigurationTests.cs" />
     <Compile Include="DateTimeTests.cs" />
     <Compile Include="DictionaryTests.cs" />

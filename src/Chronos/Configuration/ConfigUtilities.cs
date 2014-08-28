@@ -8,7 +8,7 @@ namespace Chronos.Configuration
     /// Mostly just blatenly copied from ServiceStacks's ConfigUtils
     /// https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack/Configuration/ConfigUtils.cs
     /// </summary>
-    public class ConfigUtils
+    public class ConfigUtilities
     {
         private const string ErrorAppSettingNotFound = "Unable to find App Setting: {0}";
         private const string ErrorConnectionStringNotFound = "Unable to find Connection String: {0}";
@@ -100,7 +100,7 @@ namespace Chronos.Configuration
             const string parseMethod = "Parse";
             if (type == typeof(string))
             {
-                return typeof(ConfigUtils).GetMethod(parseMethod, BindingFlags.Public | BindingFlags.Static);
+                return typeof(ConfigUtilities).GetMethod(parseMethod, BindingFlags.Public | BindingFlags.Static);
             }
             var parseMethodInfo = type.GetMethod(parseMethod,
                                                  BindingFlags.Public | BindingFlags.Static, null,
