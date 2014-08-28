@@ -138,13 +138,3 @@ Used to just peform an Action on every item in an enumerable
 
 Used to ``Distinct`` on a certain property, rather than having to group by and selecting first,
 this implementation uses a HashSet
-
-
-App.Config or Web.Config helper methods
-==========================
-View source, will show examples soon
-
-Console Application Helper Templates
-==========================
-View source, will show example soon
-
