@@ -84,53 +84,31 @@ testDate.IsBetween(startDate, endDate); //true
 testDate.IsBetween(startDate, endDate, true); //false
 ```
 
-
-String Extensions
-=================
-
-**toCamelCase**
-```cs
-var testStr = "convert this to camel case";
-
-//convertThisToCamelCase
-testStr.ToCamelCase();
-
-testStr = "AlsoWorksWhenThereAreNoSpaces";
-
-//alsoWorksWhenThereAreNoSpaces
-testStr.ToCamelCase();
-```
-
-**Fmt**
-Just a shortcut method for string.Format()
+Bulk Inserter
+===========================
+Makes it easy and fast to do bulk inserts
 
 ```
-var first = "Kyle";
-var last = "Gobel";
+public class Person
+{
+  public string FullName {get; set;}
+  public int Age {get; set;}
+}
 
-//First Name: Kyle, Last Name: Gobel
-"First Name: {0}, Last Name: {1}".Fmt(first, last);
-```
-
-**Join**
-combines a list of strings together with a delimeter, shortcut for string.Join
-
-```cs
-//Item 1\nSecondItem\nItem 3\nLast Item
-var listOfStrings = new List<string>{ "Item 1", "Second Item", "Item 3", "Last Item" }.Join("\n");
-
-```
-
-**IsBlank**
-shortcut for IsNullOrWhitespace
-
-```cs
-var testString = "";
-var testString2 = "not blank";
-
-testString.IsBlank(); //true
-
-testString2.IsBlank(); //false
+public void Main() 
+{
+  var bcp = new BulkInserter("connectionStringOrName");
+  
+  //maps all properties to lowercase_underscore format column names 
+  //FullName - full_name
+  //Age - age
+  bcp.ColumnMappings.MapColumnsAsLowercaseUnderscore();
+  
+  List<Person> data = /* some data */;
+  
+  //will bulk copy all the Persons in data to the db table dbo.people
+  bcp.Insert(data, "dbo.people");
+}
 ```
 
 Enumerable Extensions
