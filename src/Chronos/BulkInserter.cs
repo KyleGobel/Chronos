@@ -70,7 +70,7 @@ namespace Chronos
             return _mappings.Select(x => new SqlBulkCopyColumnMapping(x.Key, x.Value)).ToList();
         }
 
-        public BulkInsertColumnMappings<T> MapLowercaseAsLowercaseUnderscore()
+        public BulkInsertColumnMappings<T> MapColumnsAsLowercaseUnderscore()
         {
             var publicProps = typeof (T).GetProperties(BindingFlags.Public); 
             publicProps.ForEach(x => MapColumn(x.Name, x.Name.ToLowercaseUnderscore()));
