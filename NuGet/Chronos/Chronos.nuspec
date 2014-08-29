@@ -11,6 +11,10 @@
     <language>en-US</language>
     <projectUrl>https://github.com/KyleGobel/Chronos/</projectUrl>
   </metadata>
+  <dependencies>
+    <dependency id="FastMember" version="1.0.0.11"/>
+    <dependency id="ServiceStack.Text" version="4.0.30.0"/>
+  </dependencies>
   <files>
     <file src="..\..\bin\*.*" target="lib"/>
     <file src="..\..\src\Chronos\**\*.cs" target="src" />
