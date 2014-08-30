@@ -10,7 +10,7 @@ namespace Chronos.Configuration
         public string Password { get; set; }
 
         private const string Pattern =
-            @"^rabbitMq://?(<Host>[^:]+):(?<Port>[^:]+):(?<UserName>[^@]+)@(?<Password>.*))?$";
+            @"^rabbitMq:\/\/(?<Host>[^:]+):(?<Port>[^:]+):(?<Username>[^@]+)@(?<Password>.*)?$";
 
         public static RabbitMqConnectionString Parse(string s)
         {
