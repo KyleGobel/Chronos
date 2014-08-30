@@ -34,7 +34,15 @@ namespace Chronos.Configuration
         }
 
 
+        public static S3ConnectionString GetS3ConnectionString(string appSettingsKey)
+        {
+            return S3ConnectionString.Parse(GetAppSetting(appSettingsKey));
+        }
 
+        public static RabbitMqConnectionString GetRabbitMqConnectionString(string appSettingsKey)
+        {
+            return RabbitMqConnectionString.Parse(GetAppSetting(appSettingsKey));
+        }
         public static T GetAppSetting<T>(string key, T defaultValue)
         {
             var value = ConfigurationManager.AppSettings[key];
