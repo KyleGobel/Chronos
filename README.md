@@ -138,3 +138,36 @@ Used to just peform an Action on every item in an enumerable
 
 Used to ``Distinct`` on a certain property, rather than having to group by and selecting first,
 this implementation uses a HashSet
+
+S3 Connection String
+===========================
+There is no such thing as an Amazon s3 connection string, but there should be.
+Instead of storing like 900 values in app/web.config files for s3 connections I prefer to store them in a single value
+
+```xml
+<add key="s3ConnectionStringName" value="s3://myAccessKey:mySecretKey@MyBucket/And/Some/Folder" />
+```
+
+```cs
+
+var s3Connection = ConfigUtils.GetS3ConnectionString("s3ConnectionStringName");
+
+/*
+s3Connection.AccessKey = "myAccessKey";
+s3Connection.SecretKey = "mySecretKey";
+s3Connection.BucketName = "MyBucket";
+s3Connection.FolderName = "And/Some/Folder";
+*/
+```
+
+RabbitMqConnection String
+===========================
+Rabbit does have the ampq connection strings, but i wanted something easier for myself...works the same as the s3 connection
+
+```xml
+<add key="rabbitConnStringName" value="rabbitMq://host:port:username@password"/>
+```
+
+```cs
+var rabbitConnDetails = ConfigUtilities.GetRabbitMqConnectionString("rabbitConnStringName");
+```
