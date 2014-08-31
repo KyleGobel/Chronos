@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30324.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chronos", "Chronos\Chronos.csproj", "{8ACFB636-A6AE-4E33-932B-1A72C331BE16}"
 EndProject
@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{D8BD67
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chronos.AWS", "Chronos.AWS\Chronos.AWS.csproj", "{F5518921-F7E3-4D94-A03F-B72C271083CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,10 @@ Global
 		{2B474E69-73FE-4275-9333-006392F1F701}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B474E69-73FE-4275-9333-006392F1F701}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B474E69-73FE-4275-9333-006392F1F701}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5518921-F7E3-4D94-A03F-B72C271083CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5518921-F7E3-4D94-A03F-B72C271083CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5518921-F7E3-4D94-A03F-B72C271083CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5518921-F7E3-4D94-A03F-B72C271083CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

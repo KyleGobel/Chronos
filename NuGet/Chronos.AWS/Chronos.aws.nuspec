@@ -4,17 +4,21 @@
 -->
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">  
   <metadata>
-    <id>Chronos</id>
+    <id>Chronos.AWS</id>
     <version>0.0.0</version>
     <authors>Kyle Gobel</authors>
-    <description>A Helper/Utility library</description>
+    <description>AWS Extension to Chronos</description>
     <language>en-US</language>
     <projectUrl>https://github.com/KyleGobel/Chronos/</projectUrl>
+    <dependencies>
+      <dependency id="Chronos" />
+      <dependency id="AWSSDK" />
+    </dependencies>
   </metadata>
  
   <files>
-    <file src="..\..\bin\Chronos.dll" target="lib"/>
-    <file src="..\..\bin\Chronos.pdb" target="lib"/>
-    <file src="..\..\src\Chronos\**\*.cs" target="src" />
+    <file src="..\..\bin\Chronos.AWS.dll" target="lib"/>
+    <file src="..\..\bin\Chronos.AWS.pdb" target="lib"/>
+    <file src="..\..\src\Chronos.AWS\**\*.cs" target="src" />
   </files>
 </package>
