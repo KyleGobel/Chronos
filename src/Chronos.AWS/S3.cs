@@ -31,7 +31,7 @@ namespace Chronos.AWS
         }
         public string PutFile(string filepath, string saveAs, S3CannedACL acl)
         {
-            using (var client = new AmazonS3Client(_connectionInfo.AccessKey, _connectionInfo.SecretKey))
+            using (var client = new AmazonS3Client(_connectionInfo.AccessKey, _connectionInfo.SecretKey, new AmazonS3Config { ServiceURL = "http://s3.amazonaws.com" }))
             {
                 var request = new PutObjectRequest
                 {
