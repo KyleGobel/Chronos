@@ -246,7 +246,7 @@ namespace Chronos
             if (string.IsNullOrEmpty(tsvString))
                 return default(T);
 
-            var tsvValues = tsvString.Split(Char.Parse(TsvConfig.Delimiter));
+            var tsvValues = tsvString.Split(new [] {TsvConfig.Delimiter}, StringSplitOptions.None);
             var propsDic = TsvFormatter.PropertyNamesDictionary(typeof (T));
 
             var obj = new T();

@@ -21,6 +21,19 @@ namespace Test
             Assert.Equal("another string", obj.TestDataC);
         }
 
+        [Fact(DisplayName = "Can Deserialize to obj when using a different delimiter")]
+        public void DifferentDelimiter()
+        {
+            const string tsv = "Kyle\t|\t1\t|\t8.6\t|\tanother string";
+
+            TsvConfig.Delimiter = "\t|\t";
+            var obj = tsv.FromTsv<TestTsvObject>(stringIncludesHeader: false).Single();
+
+            Assert.Equal("Kyle", obj.Name);
+            Assert.Equal(1, obj.TestDataA);
+            Assert.Equal(8.6m, obj.TestDataB);
+            Assert.Equal("another string", obj.TestDataC);
+        }
     }
 
     public class TestTsvObject
