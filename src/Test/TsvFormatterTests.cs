@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Test
 {
+    [Trait("TsvFormatter", "")]
     public class TsvFormatterTests
     {
 
