@@ -7,12 +7,15 @@ using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Chronos.Configuration;
+using ServiceStack.Logging;
 
 namespace Chronos.AWS
 {
     public class S3
     {
         private readonly S3ConnectionString _connectionInfo;
+        private static readonly ILog Log = LogManager.GetLogger(typeof (S3));
+        public bool LoggingEnabled = true;
         public S3(S3ConnectionString connectionString)
         {
             _connectionInfo = connectionString;
@@ -64,10 +67,18 @@ namespace Chronos.AWS
         {
            DownloadFiles(_connectionInfo.AccessKey, _connectionInfo.SecretKey, _connectionInfo.BucketName, s3FolderName, saveFolder, deleteFromS3AfterDownload); 
         }
+
+        public static void DownloadFiles(S3ConnectionString connectionInfo, string savePath, bool remveFromS3AfterDownload,
+            Action<GetObjectResponse> onFileDownloaded = null, Action<DeleteObjectResponse> onFileDeleted = null)
+        {
+            DownloadFiles(connectionInfo.AccessKey, connectionInfo.SecretKey, connectionInfo.BucketName,
+                connectionInfo.FolderName, savePath, remveFromS3AfterDownload, onFileDownloaded, onFileDeleted);
+        }
         public static void DownloadFiles(string accessKey, string secretKey, string bucketName, string s3FolderName, string saveFolder, bool removeFromS3AfterDownload, Action<GetObjectResponse> onFileDownload = null, Action<DeleteObjectResponse> onFileDelete = null)
         {
             if (!Directory.Exists(saveFolder))
             {
+                Log.ErrorFormat("Couldn't find folder {0}", saveFolder);
                 throw new ArgumentException(string.Format("Could not find folder {0}", saveFolder));
             }
 
@@ -92,10 +103,12 @@ namespace Chronos.AWS
                         var extension = match.Groups["extension"].Value;
                         var savePath = Path.Combine(saveFolder, filename + extension);
                         var transferPath = savePath + ".tran";
+                        Log.DebugFormat("Downloading '{0}' to '{1}'", bucketName + "/" + f, transferPath);
                         var res = client.GetObject(req);
 
                         if (onFileDownload != null)
                         {
+                            Log.Debug("Running onFileDownload filter");
                             onFileDownload(res);
                         }
 
@@ -108,24 +121,34 @@ namespace Chronos.AWS
                                 BucketName = bucketName,
                                 Key = f
                             };
+                            Log.DebugFormat("Deleting '{0}' from S3", bucketName + "/" + f);
                             var deleteResponse = client.DeleteObject(deleteRequest);
                             if (onFileDelete != null)
                             {
+                                Log.Debug("Running onFileDelete filter");
                                 onFileDelete(deleteResponse);
                             }
                         }
 
                         //try to move the file to it's original save spot
+                        Log.DebugFormat("Moving file '{0}' to '{1}'", transferPath, savePath);
                         Enumerable.Range(0,3).ForEach(retryCount =>
                         {
                             try
                             {
-                                File.Move(transferPath, saveFolder);
+                                File.Move(transferPath, savePath);
                             }
                             catch (Exception ex)
                             {
-                               if (retryCount == 2) 
-                                throw;
+                                if (retryCount == 2)
+                                {
+                                    Log.Error("Failed to move file.  Exceeded retry count", ex);
+                                    throw;
+                                }
+
+                                Log.ErrorFormat("Failed to move file from '{0}', to '{1}'.  Retry: {2}",
+                                    transferPath, savePath, retryCount);
+
                                 Thread.Sleep(1000);
                             }
                         });
