@@ -1,4 +1,6 @@
-﻿using Amazon.S3;
+﻿using System.Linq;
+using Amazon;
+using Amazon.S3;
 using Amazon.S3.Model;
 using Chronos.Configuration;
 
@@ -45,6 +47,57 @@ namespace Chronos.AWS
                 return string.Format("http://s3.amazonaws.com/{0}/{1}/{2}", _connectionInfo.BucketName,
                     _connectionInfo.FolderName, saveAs);
             }
+        }
+
+
+        public string[] ListFiles()
+        {
+            var response = ListFiles(_connectionInfo);
+
+            if (response != null && response.S3Objects != null)
+            {
+                return response.S3Objects.Select(x => x.Key).ToArray();
+            }
+            return null;
+        }
+
+        public string[] ListFiles(string folder)
+        {
+            var response = ListFiles(_connectionInfo.AccessKey, _connectionInfo.SecretKey, _connectionInfo.BucketName, folder);
+            if (response != null && response.S3Objects != null)
+            {
+                return response.S3Objects.Select(x => x.Key).ToArray();
+            }
+            return null;
+        }
+
+        public string[] ListFiles(string bucket, string folder)
+        {
+             var response = ListFiles(_connectionInfo.AccessKey, _connectionInfo.SecretKey, bucket, folder);
+            if (response != null && response.S3Objects != null)
+            {
+                return response.S3Objects.Select(x => x.Key).ToArray();
+            }
+            return null;
+        }
+
+        public static ListObjectsResponse ListFiles(S3ConnectionString connectionString)
+        {
+            return ListFiles(connectionString.AccessKey, connectionString.SecretKey, connectionString.BucketName,
+                connectionString.FolderName);
+        }
+        public static ListObjectsResponse ListFiles(string accessKey, string secretKey, string bucketName, string folderName)
+        {
+            var client = AWSClientFactory.CreateAmazonS3Client(accessKey, secretKey,
+                new AmazonS3Config {ServiceURL = "http://s3.amazonaws.com"});
+
+            var request = new ListObjectsRequest
+            {
+                BucketName = bucketName,
+                Prefix = folderName
+            };
+
+            return client.ListObjects(request);
         }
     }
 }
