@@ -14,7 +14,7 @@ namespace Chronos.AWS
     public class S3
     {
         private readonly S3ConnectionString _connectionInfo;
-        private static readonly ILog Log = LogManager.GetLogger(typeof (S3));
+        private static readonly ServiceStack.Logging.ILog Log = LogManager.GetLogger(typeof(S3));
         public bool LoggingEnabled = true;
         public S3(S3ConnectionString connectionString)
         {
@@ -57,15 +57,12 @@ namespace Chronos.AWS
         }
 
         private const string FilepathPattern =
-            @"^[\/-\\]*(?<folder>.+[\/-\\])*(?<filename_without_extension>.+)[\.](?<extension>.+)$";
+            @"^[\/\\]*(?<folder>.+[\/\\])*(?<filename_without_extension>.+)[\.](?<extension>.+)$";
 
-        public void DownloadFiles(string s3FolderName, string saveFolder)
-        {
-           DownloadFiles(_connectionInfo.AccessKey, _connectionInfo.SecretKey, _connectionInfo.BucketName, s3FolderName, saveFolder, false); 
-        }
+
         public void DownloadFiles(string s3FolderName, string saveFolder, bool deleteFromS3AfterDownload)
         {
-           DownloadFiles(_connectionInfo.AccessKey, _connectionInfo.SecretKey, _connectionInfo.BucketName, s3FolderName, saveFolder, deleteFromS3AfterDownload); 
+            DownloadFiles(_connectionInfo.AccessKey, _connectionInfo.SecretKey, _connectionInfo.BucketName, s3FolderName, saveFolder, deleteFromS3AfterDownload);
         }
 
         public static void DownloadFiles(S3ConnectionString connectionInfo, string savePath, bool remveFromS3AfterDownload,
@@ -73,6 +70,11 @@ namespace Chronos.AWS
         {
             DownloadFiles(connectionInfo.AccessKey, connectionInfo.SecretKey, connectionInfo.BucketName,
                 connectionInfo.FolderName, savePath, remveFromS3AfterDownload, onFileDownloaded, onFileDeleted);
+        }
+
+        public void DownloadFiles(string s3FolderName, string saveFolder)
+        {
+            DownloadFiles(_connectionInfo.AccessKey, _connectionInfo.SecretKey, _connectionInfo.BucketName, s3FolderName, saveFolder, false);
         }
         public static void DownloadFiles(string accessKey, string secretKey, string bucketName, string s3FolderName, string saveFolder, bool removeFromS3AfterDownload, Action<GetObjectResponse> onFileDownload = null, Action<DeleteObjectResponse> onFileDelete = null)
         {
@@ -83,7 +85,7 @@ namespace Chronos.AWS
             }
 
             using (var client = new AmazonS3Client(accessKey, secretKey,
-                new AmazonS3Config {ServiceURL = "http://s3.amazonaws.com"}))
+                new AmazonS3Config { ServiceURL = "http://s3.amazonaws.com" }))
             {
                 var marker = default(string);
                 do
@@ -101,7 +103,7 @@ namespace Chronos.AWS
 
                         var filename = match.Groups["filename_without_extension"].Value;
                         var extension = match.Groups["extension"].Value;
-                        var savePath = Path.Combine(saveFolder, filename + extension);
+                        var savePath = Path.Combine(saveFolder, filename + "." + extension);
                         var transferPath = savePath + ".tran";
                         Log.DebugFormat("Downloading '{0}' to '{1}'", bucketName + "/" + f, transferPath);
                         var res = client.GetObject(req);
@@ -132,11 +134,13 @@ namespace Chronos.AWS
 
                         //try to move the file to it's original save spot
                         Log.DebugFormat("Moving file '{0}' to '{1}'", transferPath, savePath);
-                        Enumerable.Range(0,3).ForEach(retryCount =>
+
+                        for (var retryCount = 0; retryCount < 3; retryCount++)
                         {
                             try
                             {
                                 File.Move(transferPath, savePath);
+                                break;
                             }
                             catch (Exception ex)
                             {
@@ -151,7 +155,7 @@ namespace Chronos.AWS
 
                                 Thread.Sleep(1000);
                             }
-                        });
+                        }
                     }
                     marker = listResponse.IsTruncated ? listResponse.NextMarker : default(string);
                 } while (marker != default(string));
@@ -182,7 +186,7 @@ namespace Chronos.AWS
 
         public string[] ListFiles(string bucket, string folder)
         {
-             var response = ListFiles(_connectionInfo.AccessKey, _connectionInfo.SecretKey, bucket, folder);
+            var response = ListFiles(_connectionInfo.AccessKey, _connectionInfo.SecretKey, bucket, folder);
             if (response != null && response.S3Objects != null)
             {
                 return response.S3Objects.Select(x => x.Key).ToArray();
@@ -198,7 +202,7 @@ namespace Chronos.AWS
         public static ListObjectsResponse ListFiles(string accessKey, string secretKey, string bucketName, string folderName, string marker = null)
         {
             var client = AWSClientFactory.CreateAmazonS3Client(accessKey, secretKey,
-                new AmazonS3Config {ServiceURL = "http://s3.amazonaws.com"});
+                new AmazonS3Config { ServiceURL = "http://s3.amazonaws.com" });
 
             var request = new ListObjectsRequest
             {
