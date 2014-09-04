@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using ServiceStack;
 
-namespace TsvFormatter
+namespace Chronos
 {
     /// <summary>
     /// Custom Order Attribute to specify we are serializing this, and what order it should be in
@@ -63,7 +64,7 @@ namespace TsvFormatter
 
         public static readonly Func<Type, List<string>> GetSerializablePropertiesInOrder = Memoize<Type, List<string>>(
             t => t.GetProperties()
-                .Where(x => HasOrderAttribute(x))
+                .Where(x => HasOrderAttribute(x) || HasDataMemberAttribute(x))
                 .OrderBy(x => GetOrder(x))
                 .Select(x => x.Name)
                 .ToList()),
@@ -81,11 +82,24 @@ namespace TsvFormatter
 
                     return orderAttr.Order;
                 }
+
+                if (HasDataMemberAttribute(t))
+                {
+                    var orderAttr =
+                        t.GetCustomAttributes(false).Single(x => x.GetType().Name == "DataMemberAttribute") as
+                            DataMemberAttribute;
+
+                    return orderAttr.Order;
+                }
                 return -1;
             });
 
         private static readonly Func<PropertyInfo, bool> HasOrderAttribute =
-            Memoize<PropertyInfo, bool>(t => t.GetCustomAttributes(false).Any(a => a.GetType().Name == "OrderAttribute")); 
+            Memoize<PropertyInfo, bool>(t => t.GetCustomAttributes(false).Any(a => a.GetType().Name == "OrderAttribute"));
+
+        private static readonly Func<PropertyInfo, bool> HasDataMemberAttribute =
+            Memoize<PropertyInfo, bool>(
+                t => t.GetCustomAttributes(false).Any(a => a.GetType().Name == "DataMemberAttribute"));
         public static string MakeTsvRow(IEnumerable<string> values)
         {
             return String.Concat(
