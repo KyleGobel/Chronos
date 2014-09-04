@@ -14,7 +14,7 @@ namespace Chronos.AWS
     public class S3
     {
         private readonly S3ConnectionString _connectionInfo;
-        private static readonly ServiceStack.Logging.ILog Log = LogManager.GetLogger(typeof(S3));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(S3));
         public bool LoggingEnabled = true;
         public S3(S3ConnectionString connectionString)
         {
