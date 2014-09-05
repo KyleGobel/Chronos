@@ -8,12 +8,14 @@ using System.Linq.Expressions;
 using System.Reflection;
 using FastMember;
 using ServiceStack;
+using ServiceStack.Logging;
 
 namespace Chronos
 {
     public class BulkInserter<T> where T : class
     {
         private readonly string _connectionString;
+        private static readonly ILog Log = LogManager.GetLogger(typeof (BulkInserter<T>));
         public SqlBulkCopyOptions Options { get; set; }
         public BulkInserter(string nameOrConnectionString, BulkInsertColumnMappings<T> columnMappings = null)
         {
@@ -35,6 +37,7 @@ namespace Chronos
         {
             try
             {
+                Log.DebugFormat("Starting bulk insert into '{0}'",tableName);
                 using (var bcp = new SqlBulkCopy(_connectionString, Options))
                 using (var reader = ObjectReader.Create(items))
                 {
@@ -49,6 +52,7 @@ namespace Chronos
             }
             catch (Exception x)
             {
+                Log.ErrorFormat("Error bulk inserting", x);
                 if (onError == null) throw;
 
                 onError(x);
