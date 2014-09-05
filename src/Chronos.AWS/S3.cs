@@ -78,6 +78,7 @@ namespace Chronos.AWS
         }
         public static void DownloadFiles(string accessKey, string secretKey, string bucketName, string s3FolderName, string saveFolder, bool removeFromS3AfterDownload, Action<GetObjectResponse> onFileDownload = null, Action<DeleteObjectResponse> onFileDelete = null)
         {
+            Log.DebugFormat("Starting download of files like '{0}' to '{1}'", bucketName + "/" + s3FolderName, saveFolder);
             if (!Directory.Exists(saveFolder))
             {
                 Log.ErrorFormat("Couldn't find folder {0}", saveFolder);
@@ -160,7 +161,7 @@ namespace Chronos.AWS
                     marker = listResponse.IsTruncated ? listResponse.NextMarker : default(string);
                 } while (marker != default(string));
             }
-
+            Log.Debug("Finished downloading files from s3");
         }
 
         public string[] ListFiles()
