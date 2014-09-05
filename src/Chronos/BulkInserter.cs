@@ -76,14 +76,14 @@ namespace Chronos
 
         public BulkInsertColumnMappings<T> MapColumnsAsLowercaseUnderscore()
         {
-            var publicProps = typeof (T).GetProperties(BindingFlags.Public); 
+            var publicProps = typeof (T).GetProperties(BindingFlags.Public | BindingFlags.Instance); 
             publicProps.ForEach(x => MapColumn(x.Name, x.Name.ToLowercaseUnderscore()));
             return this;
         }
 
         public BulkInsertColumnMappings<T> MapColumnsAsCamelCase()
         {
-            var publicProps = typeof (T).GetProperties(BindingFlags.Public); 
+            var publicProps = typeof (T).GetProperties(BindingFlags.Public | BindingFlags.Instance); 
             publicProps.ForEach(x => MapColumn(x.Name, x.Name.ToCamelCase()));
             return this;
         }
