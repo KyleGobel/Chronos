@@ -72,6 +72,70 @@ namespace Chronos.AWS
                 connectionInfo.FolderName, savePath, remveFromS3AfterDownload, onFileDownloaded, onFileDeleted);
         }
 
+        public long GetTotalFileCount()
+        {
+            return GetTotalFileCount(_connectionInfo);
+        }
+
+        public long GetTotalFileCount(string prefixOrFolderName)
+        {
+            return GetTotalFileCount(new S3ConnectionString
+            {
+                AccessKey = _connectionInfo.AccessKey,
+                SecretKey = _connectionInfo.SecretKey,
+                BucketName = _connectionInfo.BucketName,
+                FolderName = prefixOrFolderName
+            });
+        }
+
+        public long GetTotalFileCount(string bucketName, string prefixOrFolderName)
+        {
+            return GetTotalFileCount(new S3ConnectionString
+            {
+                AccessKey = _connectionInfo.AccessKey,
+                SecretKey = _connectionInfo.SecretKey,
+                BucketName = bucketName,
+                FolderName = prefixOrFolderName
+            });
+        }
+        public static long GetTotalFileCount(string accessKey, string secretKey, string bucketName, string prefixOrFolder)
+        {
+            return GetTotalFileCount(new S3ConnectionString
+            {
+                AccessKey = accessKey,
+                BucketName = bucketName,
+                SecretKey = secretKey,
+                FolderName = prefixOrFolder
+            });
+        }
+        public static long GetTotalFileCount(S3ConnectionString connectionInfo)
+        {
+            using (var client = new AmazonS3Client(connectionInfo.AccessKey, connectionInfo.SecretKey,
+                    new AmazonS3Config {ServiceURL = "http://s3.amazonaws.com"}))
+            {
+                var listObjectsRequest = new ListObjectsRequest
+                {
+                    BucketName = connectionInfo.BucketName,
+                    Prefix = connectionInfo.FolderName
+                };
+
+                var marker = default(string);
+                var totalCount = 0;
+
+                var resp = default(ListObjectsResponse);
+                do
+                {
+                    listObjectsRequest.Marker = marker;
+                    resp = client.ListObjects(listObjectsRequest);
+                    totalCount += resp.S3Objects.Count;
+
+                    marker = resp.NextMarker;
+                } while (resp.IsTruncated);
+
+                return totalCount;
+            }
+        }
+           
         public void DownloadFiles(string s3FolderName, string saveFolder)
         {
             DownloadFiles(_connectionInfo.AccessKey, _connectionInfo.SecretKey, _connectionInfo.BucketName, s3FolderName, saveFolder, false);
