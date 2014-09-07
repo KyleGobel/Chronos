@@ -20,6 +20,8 @@ namespace Chronos.Interfaces
         /// <param name="receivedMsg">returns if a message was handled or if no message was handled and the timeout was hit</param>
         void HandleMessage<T>(Func<T, bool> handler, out bool receivedMsg);
 
+        int GetQueueCount<T>();
+
         void PublishMessage<T>(T message);
     }
 

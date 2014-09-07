@@ -16,10 +16,10 @@ namespace Chronos.RabbitMq
         private readonly ISerializer _serializer;
         private static readonly ILog Log = LogManager.GetLogger(typeof(RabbitQueue));
 
-        public RabbitQueue(RabbitMqConnectionString connStr, ISerializer serializer, bool requeueOnFailure = true)
+        public RabbitQueue(RabbitMqConnectionString connStr, ISerializer serializer = null, bool requeueOnFailure = true)
         {
             _connStr = connStr;
-            _serializer = serializer;
+            _serializer = serializer ?? new ServiceStackSerializer();
             RequeueOnFailure = requeueOnFailure;
         }
 
@@ -68,6 +68,28 @@ namespace Chronos.RabbitMq
                 }
             }
 
+        }
+
+        public int GetQueueCount<T>()
+        {
+            var factory = new ConnectionFactory
+            {
+                HostName = _connStr.Host,
+                Port = _connStr.Port,
+                UserName = _connStr.Username,
+                Password = _connStr.Password
+            };
+
+
+            using (var connection = factory.CreateConnection())
+            {
+                using (var channel = connection.CreateModel())
+                {
+                    var bg = channel.BasicGet(this.GetInQueueName(typeof(T)), true);
+                    var count = (bg != null) ? bg.MessageCount : 0;
+                    return (int)count;
+                }
+            }
         }
 
         public void HandleMessage<T>(Func<T,bool> handler, out bool receivedMsg) 
