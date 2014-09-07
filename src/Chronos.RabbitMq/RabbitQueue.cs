@@ -164,6 +164,7 @@ namespace Chronos.RabbitMq
                     var basicProperties = channel.CreateBasicProperties();
                     basicProperties.ContentType = "application/json";
                     basicProperties.MessageId = Guid.NewGuid().ToString("D");
+                    basicProperties.SetPersistent(true);
                     channel.QueueDeclare(this.GetInQueueName(typeof (T)), true, false, false, null);
 
                     var msgs = messages.Select(msg => _serializer.Serialize(msg))
