@@ -171,3 +171,56 @@ Rabbit does have the ampq connection strings, but i wanted something easier for 
 ```cs
 var rabbitConnDetails = ConfigUtilities.GetRabbitMqConnectionString("rabbitConnStringName");
 ```
+
+Chronos.RabbitMq
+====================
+
+Rabbit isn't all that easy to work with, lots of code needed to do simple things.  This package allows for easy queuing
+
+```cs
+public class ExampleMessage
+{
+    public string Message {get; set;}
+    public DateTime Timestamp {get; set;}
+}
+
+
+//create the mq object
+IMessageQueue mq = new RabbitQueue(_rabbitConnectionString);
+
+//publish a message
+mq.PublishMessage(new ExampleMessage { Message = "test message", Timestamp = DateTime.UtcNow });
+
+//handle a message (will block for the set timeout waiting to receive a message: default 3 seconds)
+bool receivedMessage = false;
+mq.HandleMessage<ExampleMessage>(msg => 
+{
+    //do something here to handle the message
+    if (msg.Message == "test message")
+    {
+         //returning true will Ack the message
+         return true;
+    }
+    else
+    {
+        //returning false will Nack the message
+        return false;
+    }
+}, out receivedMessage);
+
+//receivedMessage will be true if a message was actually handled, will be false if the timeout expired with no message
+```
+
+The last method of the simple interface will continually handle messages (infinite loop), there is no timeout, as it will wait forever, you would probably want to start this in a background thread.
+
+```cs
+
+mq.HandleMessages<ExampleMessage>(msg => 
+{
+    //handle message here
+    return true;
+});
+
+```
+
+
