@@ -175,7 +175,7 @@ var rabbitConnDetails = ConfigUtilities.GetRabbitMqConnectionString("rabbitConnS
 Chronos.RabbitMq
 ====================
 
-Rabbit isn't all that easy to work with, lots of code needed to do simple things.  This package allows for easy queuing
+Rabbit isn't all that easy to work with, lots of code needed to do simple things.  This package allows for easy queuing.  This method uses no extra exchanges, no bindings,and very few options available.  Uses the default rabbit direct exchange, and decent defaults for your standard worker queue pattern.
 
 ```cs
 public class ExampleMessage
