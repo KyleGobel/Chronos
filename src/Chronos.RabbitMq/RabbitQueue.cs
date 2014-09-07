@@ -41,7 +41,7 @@ namespace Chronos.RabbitMq
                 using (var channel = connection.CreateModel())
                 {
                     var consumer = new QueueingBasicConsumer(channel);
-
+                    channel.BasicQos(0,1,false);
                     var queueName = this.GetInQueueName(typeof (T));
                     channel.BasicConsume(queueName, false, consumer);
                     Log.DebugFormat("Consuming Queue: {0}", queueName);
