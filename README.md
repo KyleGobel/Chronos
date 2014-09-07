@@ -208,10 +208,11 @@ mq.HandleMessage<ExampleMessage>(msg =>
     }
 }, out receivedMessage);
 
-//receivedMessage will be true if a message was actually handled, will be false if the timeout expired with no message
+//receivedMessage will be true if a message was actually handled
+//will be false if the timeout expired with no message
 ```
 
-The last method of the simple interface will continually handle messages (infinite loop), there is no timeout, as it will wait forever, you would probably want to start this in a background thread.
+The last method of the simple interface will continually handle messages (infinite loop), there is no timeout, as it will wait forever, and the method will never return, you would probably want to start this in a background thread.
 
 ```cs
 
