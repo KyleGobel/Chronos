@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Chronos.Interfaces
@@ -23,6 +24,7 @@ namespace Chronos.Interfaces
         int GetQueueCount<T>();
 
         void PublishMessage<T>(T message);
+        void PublishMessages<T>(List<T> messages);
     }
 
     public static class MessageQueueExtensions

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Chronos.Configuration;
 using Chronos.Interfaces;
@@ -144,8 +146,9 @@ namespace Chronos.RabbitMq
             }
         }
 
-        public void PublishMessage<T>(T message)
+        public void PublishMessages<T>(List<T> messages)
         {
+            var queueName = this.GetInQueueName(typeof (T));
             var factory = new ConnectionFactory
             {
                 HostName = _connStr.Host,
@@ -161,16 +164,25 @@ namespace Chronos.RabbitMq
                     var basicProperties = channel.CreateBasicProperties();
                     basicProperties.ContentType = "application/json";
                     basicProperties.MessageId = Guid.NewGuid().ToString("D");
-                    basicProperties.Timestamp = new AmqpTimestamp(DateTime.UtcNow.ToUnixTimestamp());
                     channel.QueueDeclare(this.GetInQueueName(typeof (T)), true, false, false, null);
 
-                    var serializedMessage = _serializer.Serialize(message);
-                    var body = Encoding.UTF8.GetBytes(serializedMessage);
+                    var msgs = messages.Select(msg => _serializer.Serialize(msg))
+                        .Select(body => Encoding.UTF8.GetBytes(body));
 
-                    channel.BasicPublish("", this.GetInQueueName(typeof(T)), basicProperties, body);
-                    Log.DebugFormat("Message published to queue {0}", this.GetInQueueName(typeof(T)));
+                    foreach (var messageBody in msgs)
+                    {
+                        basicProperties.Timestamp = new AmqpTimestamp(DateTime.UtcNow.ToUnixTimestamp());
+                        channel.BasicPublish("", queueName, basicProperties, messageBody);
+                    }
+
+                    Log.DebugFormat("{0} Message(s) published to queue {1}", messages.Count, queueName);
                 }
             }
+
+        }
+        public void PublishMessage<T>(T message)
+        {
+            PublishMessages(new[]{message}.ToList());
         }
     }
 }
