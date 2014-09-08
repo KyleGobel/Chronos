@@ -87,7 +87,7 @@ namespace Chronos.RabbitMq
             {
                 using (var channel = connection.CreateModel())
                 {
-                    var bg = channel.BasicGet(this.GetInQueueName(typeof(T)), true);
+                    var bg = channel.BasicGet(this.GetInQueueName(typeof(T)), false);
                     var count = (bg != null) ? bg.MessageCount : 0;
                     return (int)count;
                 }
