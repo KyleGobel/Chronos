@@ -7,22 +7,29 @@ namespace Chronos
 {
     public static class SqlQueryExtensions
     {
-        public static string GetSqlQuery<T>(this T requestDto, string filename = null, Action<string> queryFilter = null, SqlQueryConfiguration config = null) where T : class
+        public static string GetSqlQuery<T>(this T requestDto, string fullyQualifiedName = null, Action<string> queryFilter = null, SqlQueryConfiguration config = null) where T : class
         {
             var sqlConfig = config ?? new SqlQueryConfiguration();
-            var namespacePart = sqlConfig.QueriesNamespace;
+            var namespacePart = sqlConfig.QueriesNamespace ?? typeof(T).Namespace;
 
             var sqlStatement = string.Empty;
 
             //name is the same as the requestDto, but with a .sql extension
-            var resourceName = filename ?? (namespacePart + "." + typeof(T).Name + ".sql");
+            var resourceName = fullyQualifiedName ?? (namespacePart + "." + typeof(T).Name + ".sql");
 
-            using (var stm = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+            try
             {
-                if (stm != null)
+                using (var stm = sqlConfig.Assembly.GetManifestResourceStream(resourceName))
                 {
-                    sqlStatement = new StreamReader(stm).ReadToEnd();
+                    if (stm != null)
+                    {
+                        sqlStatement = new StreamReader(stm).ReadToEnd();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Couldn't load query from manifest " + resourceName + " check inner exception for specific exception", ex);
             }
             var startIndex = sqlStatement.IndexOf(sqlConfig.StartDelimiter, StringComparison.CurrentCultureIgnoreCase);
 
