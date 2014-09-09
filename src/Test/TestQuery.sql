@@ -1,0 +1,1 @@
+select test_column from test_database..test_table

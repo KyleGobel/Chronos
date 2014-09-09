@@ -2,13 +2,12 @@
 
 namespace Chronos.Configuration
 {
-    public class SqlQueryConfiguration
+    public class EmbeddedSqlQueryConfiguration
     {
-        public SqlQueryConfiguration()
+        public EmbeddedSqlQueryConfiguration()
         {
             StartDelimiter = "--start";
-            Assembly = Assembly.GetExecutingAssembly();
-            QueriesNamespace = default(string);
+            Assembly = null; 
         }
 
         /// <summary>
@@ -19,10 +18,10 @@ namespace Chronos.Configuration
         /// comes after the '--start' text)
         /// </summary>
         public string StartDelimiter { get; set; }
-        public string QueriesNamespace { get; set; }
 
         /// <summary>
-        /// The Assembly to look for the embedded resource, default is the executing assembly
+        /// The Assembly to look for the embedded resource, default is the request dto's assembly
+        /// or the calling assembly if it's not available
         /// </summary>
         public Assembly Assembly { get; set; }
     }

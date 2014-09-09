@@ -60,7 +60,7 @@
     <Compile Include="Configuration\ConfigUtilities.cs" />
     <Compile Include="Configuration\RabbitMqConnectionString.cs" />
     <Compile Include="Configuration\S3ConnectionString.cs" />
-    <Compile Include="Configuration\SqlQueryConfiguration.cs" />
+    <Compile Include="Configuration\EmbeddedSqlQueryConfiguration.cs" />
     <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="EnumerableExtensions.cs" />
@@ -69,7 +69,7 @@
     <Compile Include="Interfaces\ISerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceStackSerializer.cs" />
-    <Compile Include="SqlQueryExtensions.cs" />
+    <Compile Include="EmbeddedSql.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="TsvFormatter.cs" />
   </ItemGroup>
