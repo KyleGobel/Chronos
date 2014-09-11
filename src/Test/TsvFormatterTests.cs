@@ -15,6 +15,7 @@ namespace Test
         {
             const string tsv = "Kyle\t1\t8.6\tanother string";
 
+            TsvConfig.Delimiter = "\t";
             var obj = tsv.FromTsv<TestTsvObject>(stringIncludesHeader: false).Single();
 
             Assert.Equal("Kyle", obj.Name);

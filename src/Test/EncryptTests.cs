@@ -11,7 +11,7 @@ namespace Test
         {
             const string testString = "i am not one of you";
 
-            const string expectedOutput = "3c787806e6aadb6433b491341f62a523bcca1488";
+            const string expectedOutput = "cc547c87a4b5b09307e895476462169ff3ae6123";
             var actualOutput = Encrypt.Sha1(testString);
 
             Assert.Equal(expectedOutput, actualOutput);
