@@ -241,6 +241,9 @@ text.ToSha256(); //ce5676bba712e862a111083c07e51256cc4be1fbff0fe4ad657f143f9c626
 Compressing
 =================
 A couple additions for compressing files using gzip.
+Considering adding 7z support prolly via the command line utility, but would then have to include 7za.exe prolly as embedded resource or something, which would increase the size of the library by alot...still thinking about solutions for this
+
+here's an example using gzip
 
 ```cs
 string compressedFileName = Compression.GZipFileToFile("someFile.txt", "someFile.txt.gz"); //compressed
