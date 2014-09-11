@@ -57,12 +57,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BulkInserter.cs" />
+    <Compile Include="Compression.cs" />
     <Compile Include="Configuration\ConfigUtilities.cs" />
     <Compile Include="Configuration\RabbitMqConnectionString.cs" />
     <Compile Include="Configuration\S3ConnectionString.cs" />
     <Compile Include="Configuration\EmbeddedSqlQueryConfiguration.cs" />
     <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="DictionaryExtensions.cs" />
+    <Compile Include="Encrypt.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="IClock.cs" />
     <Compile Include="Interfaces\IMessageQueue.cs" />
