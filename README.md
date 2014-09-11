@@ -224,4 +224,25 @@ mq.HandleMessages<ExampleMessage>(msg =>
 
 ```
 
+Hashing
+=================
+Other small stuff that is annoying to look up and write
 
+MD5, SHA1, SHA256
+
+```cs
+string text = "I need to encode this!";
+
+text.ToMd5(); //3e7a1b12be59eb75f386eca14ba73b15
+text.ToSha1(); //36a771801c21e634cd780ce8b262bc748911eba9
+text.ToSha256(); //ce5676bba712e862a111083c07e51256cc4be1fbff0fe4ad657f143f9c626e01
+```
+
+Compressing
+=================
+A couple additions for compressing files using gzip.
+
+```cs
+string compressedFileName = Compression.GZipFileToFile("someFile.txt", "someFile.txt.gz"); //compressed
+Compression.UnGZipFileToFile(compressedFileName, "someFile.txt");
+```
