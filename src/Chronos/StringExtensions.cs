@@ -14,5 +14,20 @@ namespace Chronos
             var info = new CultureInfo("en-US");
             return info.TextInfo.ToTitleCase(value).Replace(" ", "");
         }
+
+        public static string ToMd5(this string value)
+        {
+            return Encrypt.Md5(value);
+        }
+
+        public static string ToSha1(this string value)
+        {
+            return Encrypt.Sha1(value);
+        }
+
+        public static string ToSha256(this string value)
+        {
+            return Encrypt.Sha256(value);
+        }
     }
 }
