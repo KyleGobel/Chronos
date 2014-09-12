@@ -50,7 +50,7 @@ namespace Chronos
             else
             {
                 var firstMatch = "";
-                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(x => !x.IsDynamic);
                 foreach (var asm in assemblies)
                 {
                     firstMatch = asm.GetManifestResourceNames()
