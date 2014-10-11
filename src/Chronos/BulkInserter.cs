@@ -17,6 +17,7 @@ namespace Chronos
         private readonly string _connectionString;
         private static readonly ILog Log = LogManager.GetLogger(typeof (BulkInserter<T>));
         public SqlBulkCopyOptions Options { get; set; }
+        public int BulkInsertTimeout { get; set; }
         public BulkInserter(string nameOrConnectionString, BulkInsertColumnMappings<T> columnMappings = null)
         {
             try
@@ -29,6 +30,7 @@ namespace Chronos
             }
             ColumnMappings = columnMappings ?? new BulkInsertColumnMappings<T>();
             Options = SqlBulkCopyOptions.FireTriggers;
+            BulkInsertTimeout = 0;
         }
 
         public BulkInsertColumnMappings<T> ColumnMappings { get; set; }
@@ -46,6 +48,7 @@ namespace Chronos
                     bcp.SqlRowsCopied += (sender, args) => { if (notifyRowsCopied != null) notifyRowsCopied(args.RowsCopied); };
                     bcp.NotifyAfter = 100;
                     bcp.BatchSize = 5000;
+                    bcp.BulkCopyTimeout = BulkInsertTimeout;
                     bcp.WriteToServer(reader);
                 }
 
