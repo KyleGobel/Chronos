@@ -22,7 +22,7 @@ namespace Chronos
         {
             try
             {
-                _connectionString = Configuration.ConfigUtilities.GetConnectionString(_connectionString);
+                _connectionString = Configuration.ConfigUtilities.GetConnectionString(nameOrConnectionString);
             }
             catch (ConfigurationErrorsException configException)
             {
@@ -63,6 +63,107 @@ namespace Chronos
         }
     }
 
+    public class BulkInserter
+    {
+        private readonly Type _type;
+        private readonly string _connectionString;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(BulkInserter));
+        public SqlBulkCopyOptions Options { get; set; }
+        public int BulkInsertTimeout { get; set; }
+        public BulkInserter(string nameOrConnectionString,Type type, BulkInsertColumnMappings columnMappings = null)
+        {
+            _type = type;
+            try
+            {
+                _connectionString = Configuration.ConfigUtilities.GetConnectionString(nameOrConnectionString);
+            }
+            catch (ConfigurationErrorsException configException)
+            {
+                _connectionString = nameOrConnectionString;
+            }
+            ColumnMappings = columnMappings ?? new BulkInsertColumnMappings(type).MapDirectly();
+            Options = SqlBulkCopyOptions.FireTriggers;
+            BulkInsertTimeout = 0;
+        }
+
+        public BulkInsertColumnMappings ColumnMappings { get; set; }
+
+        public void Insert(List<object> items, string tableName, Action<long> notifyRowsCopied = null, Action<Exception> onError = null)
+        {
+            try
+            {
+                Log.DebugFormat("Starting bulk insert into '{0}'", tableName);
+                using (var bcp = new SqlBulkCopy(_connectionString, Options))
+                using (var reader = ObjectReader.Create(items))
+                {
+                    ColumnMappings.GetMappings().ForEach(x => bcp.ColumnMappings.Add(x));
+                    bcp.DestinationTableName = tableName;
+                    bcp.SqlRowsCopied += (sender, args) => { if (notifyRowsCopied != null) notifyRowsCopied(args.RowsCopied); };
+                    bcp.NotifyAfter = 100;
+                    bcp.BatchSize = 5000;
+                    bcp.BulkCopyTimeout = BulkInsertTimeout;
+                    bcp.WriteToServer(reader);
+                }
+
+            }
+            catch (Exception x)
+            {
+                Log.ErrorFormat("Error bulk inserting", x);
+                if (onError == null) throw;
+
+                onError(x);
+            }
+        }
+    }
+
+    public class BulkInsertColumnMappings
+    {
+        private readonly Type _type;
+        private readonly Dictionary<string, string> _mappings;
+        public BulkInsertColumnMappings(Type type)
+        {
+            _type = type;
+            _mappings = new Dictionary<string, string>();
+        }
+
+        public List<SqlBulkCopyColumnMapping> GetMappings()
+        {
+            return _mappings.Select(x => new SqlBulkCopyColumnMapping(x.Key, x.Value)).ToList();
+        }
+        public BulkInsertColumnMappings MapColumnsAsLowercaseUnderscore()
+        {
+            var publicProps = _type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            publicProps.ForEach(x => MapColumn(x.Name, x.Name.ToLowercaseUnderscore()));
+            return this;
+        }
+        public BulkInsertColumnMappings MapColumn(string sourceProperty,
+          string destinationColumn)
+        {
+            _mappings.AddOrUpdate(sourceProperty, destinationColumn);
+            return this;
+        }
+
+        public BulkInsertColumnMappings MapColumnsAsCamelCase()
+        {
+            var publicProps = _type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            publicProps.ForEach(x => MapColumn(x.Name, x.Name.ToCamelCase()));
+            return this;
+        }
+
+        public BulkInsertColumnMappings MapDirectly()
+        {
+            var publicProps = _type.GetProperties(BindingFlags.Public |BindingFlags.Instance);
+            publicProps.ForEach(x => MapColumn(x.Name, x.Name));
+            return this;
+        }
+
+        public BulkInsertColumnMappings Except(string property)
+        {
+            _mappings.Remove(property);
+            return this;
+        }
+
+    }
     public class BulkInsertColumnMappings<T> where T : class
     {
         private readonly Dictionary<string, string> _mappings;
@@ -101,6 +202,12 @@ namespace Chronos
         public BulkInsertColumnMappings<T> Except(string property)
         {
             _mappings.Remove(property);
+            return this;
+        }
+        public BulkInsertColumnMappings<T> MapDirectly()
+        {
+            var publicProps = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            publicProps.ForEach(x => MapColumn(x.Name, x.Name));
             return this;
         }
  

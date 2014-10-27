@@ -8,7 +8,6 @@ namespace Test
         [Fact]
         public void Test()
         {
-            var result = ConfigUtilities.GetAppSetting("test", "");
         }
 
         [Fact (DisplayName="RabbitMqConnectionString.Parse method parses a rabbit connection string")]
