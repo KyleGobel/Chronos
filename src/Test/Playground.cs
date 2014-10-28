@@ -1,4 +1,9 @@
-﻿using Chronos.Configuration;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using Chronos;
+using Chronos.Configuration;
 using Chronos.Interfaces;
 using Chronos.RabbitMq;
 using ServiceStack;
@@ -6,8 +11,25 @@ using Xunit;
 
 namespace Test
 {
+    public class TestModel
+    {
+        public int Id { get; set; }
+    }
     public class Playground
     {
+        [Fact(Skip="Internal Only (buld server doesn't have database configured")]
+        public void CanBulkInsertNonGenerically()
+        {
+            var tableName = "TestMe";
+
+            IEnumerable nonGeneric = new List<TestModel> {new TestModel {Id = 1}, new TestModel {Id = 2}};
+
+            var bcp = new BulkInserter("Server=localhost;Database=Main;Trusted_Connection=True;", typeof (TestModel));
+            bcp.Insert(nonGeneric, tableName);
+
+
+            //old fashionly open SSMS and check to see if items were inserted :)
+        }
         [Fact(Skip="Internal Only (build server doesn't have rabbit installed)")]
         public void RabbitPublishTest()
         {

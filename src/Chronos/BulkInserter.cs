@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
@@ -88,13 +89,21 @@ namespace Chronos
 
         public BulkInsertColumnMappings ColumnMappings { get; set; }
 
-        public void Insert(List<object> items, string tableName, Action<long> notifyRowsCopied = null, Action<Exception> onError = null)
+        public void Insert(IEnumerable items, string tableName, Action<long> notifyRowsCopied = null, Action<Exception> onError = null)
         {
+
+            var targetMethod = typeof (ObjectReader).GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
+            var targetGenericMethod = targetMethod.MakeGenericMethod(new Type[] {_type});
+
+            var castMethod = typeof (Enumerable).GetMethod("Cast", BindingFlags.Static | BindingFlags.Public);
+            var castGenericMethod = castMethod.MakeGenericMethod(new Type[] {_type});
             try
             {
+                var objectReader = (ObjectReader)targetGenericMethod.Invoke(null,
+                    new[] {castGenericMethod.Invoke(null, new [] {items }), null});
                 Log.DebugFormat("Starting bulk insert into '{0}'", tableName);
                 using (var bcp = new SqlBulkCopy(_connectionString, Options))
-                using (var reader = ObjectReader.Create(items))
+                using (var reader = objectReader)
                 {
                     ColumnMappings.GetMappings().ForEach(x => bcp.ColumnMappings.Add(x));
                     bcp.DestinationTableName = tableName;
