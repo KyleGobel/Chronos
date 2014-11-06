@@ -32,6 +32,11 @@ testDate.StartOfWeek();
 //2014-1-4 23:59:59.9999999
 testDate.EndOfWeek();
 ```
+**Type Extensions**
+```csharp
+//Nullable<DateTime>
+typeof(DateTime).GetNullableType();
+```
 
 **ToUnixTimestamp / FromUnixTimestap**
 
