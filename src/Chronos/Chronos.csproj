@@ -62,6 +62,8 @@
     <Compile Include="Configuration\RabbitMqConnectionString.cs" />
     <Compile Include="Configuration\S3ConnectionString.cs" />
     <Compile Include="Configuration\EmbeddedSqlQueryConfiguration.cs" />
+    <Compile Include="Dapper\Dapper.cs" />
+    <Compile Include="SqlMetadata\SqlMetadata.cs" />
     <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="Encrypt.cs" />
@@ -74,6 +76,7 @@
     <Compile Include="EmbeddedSql.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="TsvFormatter.cs" />
+    <Compile Include="TypeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Fody.targets" />
