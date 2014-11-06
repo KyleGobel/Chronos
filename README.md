@@ -249,3 +249,54 @@ here's an example using gzip
 string compressedFileName = Compression.GZipFileToFile("someFile.txt", "someFile.txt.gz"); //compressed
 Compression.UnGZipFileToFile(compressedFileName, "someFile.txt");
 ```
+
+
+Sql Metadata
+==================
+Several extensions were added to help me out in some other recent projects
+
+``List<TableMetadata> IDbConnection.GetTables`` - this returns a list of ``TableMetadata`` of all the tables.
+
+``TableMetadata`` looks like this
+
+```cs
+public class TableMetadata
+{
+  public string Database { get; set; }
+  public string Schema { get; set; }
+  public string Table { get; set; }
+}
+```
+
+``List<IDbDataParameter>IDbConnection.GetStoredProcedureParams(string storedProcName)`` - much like this one sounds, it will return a list of parameters that this stored procedure accepts
+
+``bool? SqlConnection.IsColumnNullable(string table, string columnName)`` - returns whether or not the column is nullable
+
+``List<ColumnMetadata> SqlConnection.GetColumnMetadata(string schema, string tableName)`` - returns a list of ``ColumnMetadata`` about a table
+
+``ColumnMetadata`` looks like this
+
+```cs
+public class ColumnMetadata
+{
+  public string Name { get; set; }
+  public Type Type { get; set; }
+  public DbType DbType { get; set; }
+  public int Length { get; set; }
+}
+```
+
+``Dictionary<string, Type> SqlConnection.GetColumnTypesFromQuery(string sql)`` - this will take a query and return a <columnName>, <C# Type> dictionary..i.e
+
+```cs
+using (var connection = new SqlConnection(connStr))
+{
+  connection.Open();
+  var typeDictionary = connection.GetColumnTypesFromQuery("select id, name from products");
+  
+  //typeDictionary contains::
+  // { "id", typeof(Int32) }
+  // { "name", typeof(String)}
+}
+```
+
