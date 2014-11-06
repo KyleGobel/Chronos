@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -37,13 +38,12 @@ namespace Chronos.SqlMetadata
         public static List<IDbDataParameter> GetStoredProcedureParams(this IDbConnection connection,
             string storedProcName)
         {
-            using (var cmd = new SqlCommand(storedProcName, (SqlConnection) connection))
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-                SqlCommandBuilder.DeriveParameters(cmd);
-
-                return cmd.Parameters.Cast<IDbDataParameter>().ToList();
-            }
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = storedProcName;
+            cmd.CommandType = CommandType.StoredProcedure;
+            var sqlCommand = cmd as SqlCommand;
+            if (sqlCommand != null) SqlCommandBuilder.DeriveParameters(sqlCommand);
+            return cmd.Parameters.Cast<IDbDataParameter>().ToList();
         }
 
         public static bool? IsColumnNullable(this SqlConnection connection, string table, string columnName)
