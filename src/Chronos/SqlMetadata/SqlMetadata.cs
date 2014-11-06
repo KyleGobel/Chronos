@@ -34,7 +34,7 @@ namespace Chronos.SqlMetadata
             return connection.Query<TableMetadata>(sql).ToList();
         }
 
-        public static List<IDbDataParameter> GetStoredProcedureParamsFromSqlServer(this IDbConnection connection,
+        public static List<IDbDataParameter> GetStoredProcedureParams(this IDbConnection connection,
             string storedProcName)
         {
             using (var cmd = new SqlCommand(storedProcName, (SqlConnection) connection))
@@ -66,7 +66,14 @@ namespace Chronos.SqlMetadata
                 DbType t;
                 DbType.TryParse(col.data_type, true, out t);
                 var m = new ColumnMetadata {Name = col.column_name, DbType = t};
-                m.Type = DbTypeTypeMap[m.DbType];
+                if (col.is_nullable)
+                {
+                    m.Type = DbTypeTypeMap[m.DbType].GetNullableType();
+                }
+                else
+                {
+                    m.Type = DbTypeTypeMap[m.DbType];
+                }
                 m.Length = col.character_maximum_length ?? 0;
                 metadata.Add(col);
             }

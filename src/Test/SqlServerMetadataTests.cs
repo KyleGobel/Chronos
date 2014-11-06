@@ -22,7 +22,7 @@ namespace Test
         [Fact(Skip="No sql server", DisplayName = "Can get parameters from a stored procedure")]
         public void CanGetStoredProcedureParams()
         {
-            var parameters = connection.GetStoredProcedureParamsFromSqlServer("IMS.usp_sync_adjustments");
+            var parameters = connection.GetStoredProcedureParams("IMS.usp_sync_adjustments");
 
             Assert.True(parameters.Any(x => x.ParameterName == "@FulfillmentCenter_ID"));
         }
