@@ -10,7 +10,7 @@ DateTime Releated Extensions
 ===========================
 
 **StartOfDay / EndOfDay**
-```cs
+```csharp
 //2014-1-1
 var testDate = new DateTime(2014, 1, 1);
 
@@ -22,7 +22,7 @@ testDate.EndOfDay();
 ```
 
 **StartOfWeek / EndOfWeek**
-```cs
+```csharp
 //2014-1-1
 var testDate = new DateTime(2014, 1, 1);
 
@@ -35,7 +35,7 @@ testDate.EndOfWeek();
 
 **ToUnixTimestamp / FromUnixTimestap**
 
-```cs
+```csharp
 //2014-1-1 @ 0:0:0 UTC
 var testDate = new DateTime(2014, 1, 1);
 
@@ -51,7 +51,7 @@ DateTime dateTime = timeStamp.FromUnixTimeStamp();
 **IsBetween**
 
 The IsBetween method will tell you if a date is between two other dates, if you'd like it to also compare the times, then you can set the optional third parameter ``compareTime`` to true
-```cs
+```csharp
 var startDate = DateTime.Parse("2010-1-1");
 
 var endDate = DateTime.Parse("2010-1-3");
@@ -88,7 +88,7 @@ Bulk Inserter
 ===========================
 Makes it easy and fast to do bulk inserts
 
-```cs
+```csharp
 public class Person
 {
   public string FullName {get; set;}
@@ -118,7 +118,7 @@ public void Main()
    
        Also you can map single columns fluently if that's your thing
    
-    ```cs
+    ```csharp
        bcp.ColumnMappings
             .MapColumn(col => col.FullName, "Name")
             .MapColumn(col => col.Age, "YearsAlive");
@@ -148,7 +148,7 @@ Instead of storing like 900 values in app/web.config files for s3 connections I 
 <add key="s3ConnectionStringName" value="s3://myAccessKey:mySecretKey@MyBucket/And/Some/Folder" />
 ```
 
-```cs
+```csharp
 
 var s3Connection = ConfigUtils.GetS3ConnectionString("s3ConnectionStringName");
 
@@ -168,7 +168,7 @@ Rabbit does have the ampq connection strings, but i wanted something easier for 
 <add key="rabbitConnStringName" value="rabbitMq://host:port:username@password"/>
 ```
 
-```cs
+```csharp
 var rabbitConnDetails = ConfigUtilities.GetRabbitMqConnectionString("rabbitConnStringName");
 ```
 
@@ -177,7 +177,7 @@ Chronos.RabbitMq
 
 Rabbit isn't all that easy to work with, lots of code needed to do simple things.  This package allows for easy queuing.  This method uses no extra exchanges, no bindings,and very few options available.  Uses the default rabbit direct exchange, and decent defaults for your standard worker queue pattern.
 
-```cs
+```csharp
 public class ExampleMessage
 {
     public string Message {get; set;}
@@ -214,7 +214,7 @@ mq.HandleMessage<ExampleMessage>(msg =>
 
 The last method of the simple interface will continually handle messages (infinite loop), there is no timeout, as it will wait forever, and the method will never return, you would probably want to start this in a background thread.
 
-```cs
+```csharp
 
 mq.HandleMessages<ExampleMessage>(msg => 
 {
@@ -230,7 +230,7 @@ Other small stuff that is annoying to look up and write
 
 MD5, SHA1, SHA256
 
-```cs
+```csharp
 string text = "I need to encode this!";
 
 text.ToMd5(); //3e7a1b12be59eb75f386eca14ba73b15
@@ -245,7 +245,7 @@ Considering adding 7z support prolly via the command line utility, but would the
 
 here's an example using gzip
 
-```cs
+```csharp
 string compressedFileName = Compression.GZipFileToFile("someFile.txt", "someFile.txt.gz"); //compressed
 Compression.UnGZipFileToFile(compressedFileName, "someFile.txt");
 ```
@@ -255,11 +255,15 @@ Sql Metadata
 ==================
 Several extensions were added to help me out in some other recent projects
 
-``List<TableMetadata> IDbConnection.GetTables`` - this returns a list of ``TableMetadata`` of all the tables.
+```csharp
+List<TableMetadata> IDbConnection.GetTables()
+``` 
+this returns a list of ``TableMetadata`` of all the tables.
+
 
 ``TableMetadata`` looks like this
 
-```cs
+```csharp
 public class TableMetadata
 {
   public string Database { get; set; }
@@ -268,15 +272,25 @@ public class TableMetadata
 }
 ```
 
-``List<IDbDataParameter>IDbConnection.GetStoredProcedureParams(string storedProcName)`` - much like this one sounds, it will return a list of parameters that this stored procedure accepts
+```csharp
+List<IDbDataParameter>IDbConnection.GetStoredProcedureParams(string storedProcName)
+``` 
+much like this one sounds, it will return a list of parameters that this stored procedure accepts
 
-``bool? SqlConnection.IsColumnNullable(string table, string columnName)`` - returns whether or not the column is nullable
 
-``List<ColumnMetadata> SqlConnection.GetColumnMetadata(string schema, string tableName)`` - returns a list of ``ColumnMetadata`` about a table
+```csharp
+bool? SqlConnection.IsColumnNullable(string table, string columnName)
+```
+returns whether or not the column is nullable
+
+```csharp
+List<ColumnMetadata> SqlConnection.GetColumnMetadata(string schema, string tableName)
+```
+returns a list of ``ColumnMetadata`` about a table
 
 ``ColumnMetadata`` looks like this
 
-```cs
+```csharp
 public class ColumnMetadata
 {
   public string Name { get; set; }
@@ -286,9 +300,12 @@ public class ColumnMetadata
 }
 ```
 
-``Dictionary<string, Type> SqlConnection.GetColumnTypesFromQuery(string sql)`` - this will take a query and return a <columnName>, <C# Type> dictionary..i.e
+```csharp
+Dictionary<string, Type> SqlConnection.GetColumnTypesFromQuery(string sql)
+``` 
+this will take a query and return a <columnName>, <C# Type> dictionary..i.e
 
-```cs
+```csharp
 using (var connection = new SqlConnection(connStr))
 {
   connection.Open();
