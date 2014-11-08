@@ -24,6 +24,19 @@ namespace Chronos.Configuration
             return value;
         }
 
+        public static string GetConnectionStringFromNameOrConnectionString(string nameOrConnectionString)
+        {
+            var connStr = "";
+            try
+            {
+                connStr = GetConnectionString(nameOrConnectionString);
+            }
+            catch (ConfigurationErrorsException configException)
+            {
+                connStr = nameOrConnectionString;
+            }
+            return connStr;
+        }
         public static string GetConnectionString(string key)
         {
             var value = ConfigurationManager.ConnectionStrings[key];

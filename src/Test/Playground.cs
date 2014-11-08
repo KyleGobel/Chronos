@@ -24,7 +24,7 @@ namespace Test
 
             IEnumerable nonGeneric = new List<TestModel> {new TestModel {Id = 1}, new TestModel {Id = 2}};
 
-            var bcp = new BulkInserter("Server=localhost;Database=Main;Trusted_Connection=True;", typeof (TestModel));
+            var bcp = new SqlServerBulkInserter("Server=localhost;Database=Main;Trusted_Connection=True;", typeof (TestModel));
             bcp.Insert(nonGeneric, tableName);
 
 

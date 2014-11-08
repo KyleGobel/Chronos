@@ -7,19 +7,20 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Chronos.Interfaces;
 using FastMember;
 using ServiceStack;
 using ServiceStack.Logging;
 
 namespace Chronos
 {
-    public class BulkInserter<T> where T : class
+    public class SqlServerBulkInserter<T> : IBulkInserter<T> where T : class
     {
         private readonly string _connectionString;
-        private static readonly ILog Log = LogManager.GetLogger(typeof (BulkInserter<T>));
+        private static readonly ILog Log = LogManager.GetLogger(typeof (SqlServerBulkInserter<T>));
         public SqlBulkCopyOptions Options { get; set; }
         public int BulkInsertTimeout { get; set; }
-        public BulkInserter(string nameOrConnectionString, BulkInsertColumnMappings<T> columnMappings = null)
+        public SqlServerBulkInserter(string nameOrConnectionString, BulkInsertColumnMappings<T> columnMappings = null)
         {
             try
             {
@@ -29,7 +30,7 @@ namespace Chronos
             {
                 _connectionString = nameOrConnectionString;
             }
-            ColumnMappings = columnMappings ?? new BulkInsertColumnMappings<T>();
+            ColumnMappings = columnMappings ?? new BulkInsertColumnMappings<T>().MapDirectly();
             Options = SqlBulkCopyOptions.FireTriggers;
             BulkInsertTimeout = 0;
         }
@@ -64,14 +65,14 @@ namespace Chronos
         }
     }
 
-    public class BulkInserter
+    public class SqlServerBulkInserter : IBulkInserter
     {
         private readonly Type _type;
         private readonly string _connectionString;
-        private static readonly ILog Log = LogManager.GetLogger(typeof(BulkInserter));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(SqlServerBulkInserter));
         public SqlBulkCopyOptions Options { get; set; }
         public int BulkInsertTimeout { get; set; }
-        public BulkInserter(string nameOrConnectionString,Type type, BulkInsertColumnMappings columnMappings = null)
+        public SqlServerBulkInserter(string nameOrConnectionString,Type type, BulkInsertColumnMappings columnMappings = null)
         {
             _type = type;
             try
