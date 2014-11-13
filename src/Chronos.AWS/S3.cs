@@ -112,6 +112,25 @@ namespace Chronos.AWS
             DownloadFiles(connectionInfo.AccessKey, connectionInfo.SecretKey, connectionInfo.BucketName,
                 connectionInfo.FolderName, savePath, remveFromS3AfterDownload, onFileDownloaded, onFileDeleted);
         }
+
+        public bool FileExists(string path)
+        {
+            return FileExists(path, _connectionInfo.BucketName);
+        }
+        public bool FileExists(string path, string bucket)
+        {
+            using (var s3 = new AmazonS3Client(_connectionInfo.AccessKey, _connectionInfo.SecretKey,
+                new AmazonS3Config {ServiceURL = "http://s3.amazonaws.com"}))
+            {
+                return s3.ListObjects(new ListObjectsRequest
+                {
+                    BucketName = bucket,
+                    Prefix = path,
+                    MaxKeys = 1
+                })
+                    .MaxKeys > 0;
+            }
+        }
         public bool MoveFile(string sourcePath, string sourceBucket, string destinationPath, string destinationBucket)
         {
             try
