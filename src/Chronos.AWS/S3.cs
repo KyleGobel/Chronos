@@ -59,6 +59,46 @@ namespace Chronos.AWS
         private const string FilepathPattern =
             @"^[\/\\]*(?<folder>.+[\/\\])*(?<filename_without_extension>.+)[\.](?<extension>.+)$";
 
+        public void CompressAndUploadStringData(string data, string savePath)
+        {
+            if (string.IsNullOrEmpty(data))
+            {
+                throw new ArgumentException("data");
+            }
+            if (string.IsNullOrEmpty(savePath))
+            {
+                throw new ArgumentException("savePath");
+            }
+
+            try
+            {
+                var bytes = Compression.GZipString(data);
+                UploadBytesToS3(bytes, savePath);
+            }
+            catch (Exception x)
+            {
+                Log.Error("Error uploading to s3", x);
+            }
+        }
+        /// <summary>
+        /// Uploads bytes to s3 to the bucket of the connection string 
+        /// </summary>
+        /// <param name="data">the bytes to upload</param>
+        /// <param name="savePath">the place to save the file on s3, will be appened with .gz</param>
+        public void UploadBytesToS3(byte[] data, string savePath)
+        {
+            var req = new PutObjectRequest
+            {
+                BucketName = _connectionInfo.BucketName,
+                Key = savePath + ".gz",
+                InputStream = new MemoryStream(data)
+            };
+            using (var client = new AmazonS3Client(_connectionInfo.AccessKey, _connectionInfo.SecretKey,
+                    new AmazonS3Config {ServiceURL = "http://s3.amazonaws.com"}))
+            {
+                client.PutObject(req);
+            }
+        }
 
         public void DownloadFiles(string s3FolderName, string saveFolder, bool deleteFromS3AfterDownload)
         {
