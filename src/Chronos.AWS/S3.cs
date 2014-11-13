@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Amazon;
@@ -110,6 +111,37 @@ namespace Chronos.AWS
         {
             DownloadFiles(connectionInfo.AccessKey, connectionInfo.SecretKey, connectionInfo.BucketName,
                 connectionInfo.FolderName, savePath, remveFromS3AfterDownload, onFileDownloaded, onFileDeleted);
+        }
+        public bool MoveFile(string sourcePath, string sourceBucket, string destinationPath, string destinationBucket)
+        {
+            try
+            {
+                var request = new CopyObjectRequest
+                {
+                    DestinationBucket = destinationBucket,
+                    DestinationKey = destinationPath,
+                    SourceKey = sourcePath,
+                    SourceBucket = sourceBucket
+                };
+
+                using (var s3 = new AmazonS3Client(_connectionInfo.AccessKey, _connectionInfo.SecretKey,
+                        new AmazonS3Config {ServiceURL = "http://s3.amazonaws.com"}))
+                {
+                    var response = s3.CopyObject(request);
+                    if (response.HttpStatusCode == HttpStatusCode.OK)
+                    {
+                        s3.DeleteObject(new DeleteObjectRequest() {BucketName = sourceBucket, Key = sourcePath});
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error Moving file", ex);
+                return false;
+            }
+
         }
 
         public long GetTotalFileCount()
