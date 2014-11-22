@@ -12,7 +12,7 @@
     <projectUrl>https://github.com/KyleGobel/Chronos/</projectUrl>
     <dependencies>
       <dependency id="Chronos" />
-      <dependency id="RabbitMq.Client" />
+      <dependency id="RabbitMq.Client" version="3.3.5"/>
       <dependency id="ServiceStack.Interfaces" />
     </dependencies>
   </metadata>

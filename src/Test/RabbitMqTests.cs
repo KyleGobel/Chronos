@@ -7,10 +7,10 @@ namespace Test
 {
     public class RabbitMqTests
     {
-        [Fact(DisplayName="Can publish list of messages to rabbitmq", Skip="Build server has no queue server")]
+        [Fact(DisplayName="Can publish list of messages to rabbitmq", Skip="no queue server")]
         public void CanPublishMessages()
         {
-            var mq = new RabbitQueue("a valid connection string here");
+            var mq = new RabbitQueue("valid connection stirng");
             var testItems = new List<TestItems>
             {
                 {new TestItems { Id =1, Url = "http://www.google.com"}},
