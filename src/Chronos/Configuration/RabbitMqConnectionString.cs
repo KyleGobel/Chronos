@@ -31,6 +31,11 @@ namespace Chronos.Configuration
             Password = "",
             Username = ""
         };
+
+        public static implicit operator RabbitMqConnectionString(string s)
+        {
+           return Parse(s); 
+        }
         public static bool TryParse(string s, out RabbitMqConnectionString connStr)
         {
             var match = Regex.Match(s, Pattern);
