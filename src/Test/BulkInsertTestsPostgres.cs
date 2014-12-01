@@ -12,7 +12,7 @@ namespace Test
             public Guid DatabaseId { get; set; }
             public string Name { get; set; }
         }
-        [Fact]
+        [Fact (Skip="No Postgres server")]
         public void CanBulkInsertIntoPostgres()
         {
             var mappings = new BulkInsertColumnMappings<Db>().MapColumnsAsLowercaseUnderscore();
@@ -31,7 +31,7 @@ namespace Test
             bcp.Insert(itemsToInsert, "databases");
         }
 
-        [Fact]
+        [Fact(Skip="No postgres server")]
         public void CanBulkInsertToPostgresNonGenericly()
         {
             var mappings = new BulkInsertColumnMappings(typeof(Db)).MapColumnsAsLowercaseUnderscore();

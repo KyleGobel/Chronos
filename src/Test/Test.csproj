@@ -53,6 +53,7 @@
     <Compile Include="ConfigurationTests.cs" />
     <Compile Include="DateTimeTests.cs" />
     <Compile Include="DictionaryTests.cs" />
+    <Compile Include="EmbeddedResourcesTests.cs" />
     <Compile Include="EncryptTests.cs" />
     <Compile Include="Playground.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
