@@ -53,8 +53,13 @@ namespace Chronos.AWS
             };
 
             var resp = _client.Query(request);
-            var dict = resp.Items[0].ToDictionary(x => x.Key, x => GetValueFromAttribute(x.Value));
-            return _serializer.Serialize(dict);
+            var item = resp.Items.FirstOrDefault();
+            if (item != null)
+            {
+                var dict = item.ToDictionary(x => x.Key, x => GetValueFromAttribute(x.Value));
+                return _serializer.Serialize(dict);               
+            }
+            return string.Empty;
         }
 
         private object GetValueFromAttribute(AttributeValue value)
