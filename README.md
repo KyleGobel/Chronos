@@ -3,7 +3,23 @@ Chronos
 
 Chronos is a time saving library with extension methods I use often or find my self re-writing often.
 
-Only dependant on the .net framework.
+
+Dynamo
+=====================
+DynamoDb from AWS is pretty cool, except it's the hardest thing ever to use or get data out of (look at the implementation to get a single item).  
+
+Will continue to add methods as I need them myself.
+
+Currently there is just a single method to get a json object document from a table using an index.
+
+```csharp
+var client = new Dyanmo(new BasicAWSCredentials(_accessKey, _secretKey), RegionEndpoint.USWest2);
+
+//this will lookup the record in tableName where the column id equals 7
+var json = client.GetSingle("tableName", "indexName", "id", "7");
+```
+(more dynamo stuff coming soon..it's in the Chronos.AWS nuget package)
+
 
 
 DateTime Releated Extensions 
