@@ -32,6 +32,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Humanizer">
+      <HintPath>..\packages\Humanizer.1.31.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
+    </Reference>
+    <Reference Include="Nustache.Core">
+      <HintPath>..\packages\Nustache.1.13.8.22\lib\net20\Nustache.Core.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\packages\ServiceStack.Text.4.0.31\lib\net40\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -60,6 +66,8 @@
     <Compile Include="RabbitMqTests.cs" />
     <Compile Include="SqlQueriesTest.cs" />
     <Compile Include="SqlServerMetadataTests.cs" />
+    <Compile Include="StoredProcTemplateTests.cs" />
+    <Compile Include="TempEngine.cs" />
     <Compile Include="TsvFormatterTests.cs" />
   </ItemGroup>
   <ItemGroup>

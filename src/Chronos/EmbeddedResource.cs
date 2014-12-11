@@ -10,8 +10,10 @@ namespace Chronos
     {
         public static string Get(string resourceName)
         {
-            return string.Empty;
+            var asm = default(Assembly);
+            var fullname = FindFullyQualifiedName(resourceName, out asm);
 
+            return GetTextFromResource(asm, fullname);
         }
         public static string GetTextFromResource(Assembly assembly, string fullyQualifiedName)
         {
@@ -32,9 +34,9 @@ namespace Chronos
             }
             return text;
         }
-        public static string FindFullyQualifiedName(string queryName, out Assembly assemblyFoundIn, Assembly assembly = null)
+        public static string FindFullyQualifiedName(string resourceName, out Assembly assemblyFoundIn, Assembly assembly = null)
         {
-            var pattern = string.Format(@"(?:(?!{0}))\.{0}", queryName);
+            var pattern = string.Format(@"(?:(?!{0}))\.{0}", resourceName);
             if (assembly != null)
             {
                 assemblyFoundIn = assembly;

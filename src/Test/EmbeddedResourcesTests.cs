@@ -15,5 +15,12 @@ namespace Test
             Assert.NotNull(result);
             Assert.NotNull(asm);
         }
+
+        [Fact]
+        public void CanGetResource()
+        {
+            var resource = EmbeddedResource.Get("TestQuery.sql");
+            Assert.NotNull(resource);
+        }
     }
 }

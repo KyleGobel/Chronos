@@ -17,6 +17,30 @@ namespace Chronos
                 return type;
         }
 
+        public static Type GetStaticClassFromCurrentDomain(this string fullname)
+        {
+          var assTypes = new List<Type>();
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (Assembly item in assemblies)
+            {
+                assTypes.AddRange(item.GetTypes().Where(x => x.IsClass && x.IsSealed && x.IsAbstract));
+            }
+
+            return assTypes.FirstOrDefault(x => x.FullName == fullname);
+        }
+        public static void RunOnDynamic<T>(this T target, Action<dynamic> action)
+        {
+            dynamic d = target;
+            try
+            {
+                action(d);
+
+            }
+            catch (Exception)
+            {
+            }
+        }
         /// <summary>
         /// This Methode extends the System.Type-type to get all extended methods. It searches hereby in all assemblies which are known by the current AppDomain.
         /// </summary>
@@ -29,7 +53,8 @@ namespace Chronos
         {
             List<Type> AssTypes = new List<Type>();
 
-            foreach (Assembly item in AppDomain.CurrentDomain.GetAssemblies())
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (Assembly item in assemblies)
             {
                 AssTypes.AddRange(item.GetTypes());
             }
