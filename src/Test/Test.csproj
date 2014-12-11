@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AWSSDK, Version=2.2.4.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AWSSDK.2.2.4.0\lib\net45\AWSSDK.dll</HintPath>
+    </Reference>
     <Reference Include="Humanizer">
       <HintPath>..\packages\Humanizer.1.31.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
     </Reference>
@@ -59,6 +63,7 @@
     <Compile Include="ConfigurationTests.cs" />
     <Compile Include="DateTimeTests.cs" />
     <Compile Include="DictionaryTests.cs" />
+    <Compile Include="DynamoTests.cs" />
     <Compile Include="EmbeddedResourcesTests.cs" />
     <Compile Include="EncryptTests.cs" />
     <Compile Include="Playground.cs" />
@@ -71,6 +76,10 @@
     <Compile Include="TsvFormatterTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Chronos.AWS\Chronos.AWS.csproj">
+      <Project>{F5518921-F7E3-4D94-A03F-B72C271083CB}</Project>
+      <Name>Chronos.AWS</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Chronos.PostgreSQL\Chronos.PostgreSQL.csproj">
       <Project>{8c20224c-9f6b-4c3e-bbcd-fb061b9ef8d8}</Project>
       <Name>Chronos.PostgreSQL</Name>
