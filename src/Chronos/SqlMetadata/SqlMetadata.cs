@@ -31,7 +31,7 @@ namespace Chronos.SqlMetadata
         public static List<TableMetadata> GetTables(this IDbConnection connection)
         {
             const string sql =
-                @"SELECT TABLE_CATALOG as [Database], TABLE_SCHEMA as [Schema], TABLE_NAME as [Table] FROM information_schema.tables";
+                @"SELECT TABLE_CATALOG as Database, TABLE_SCHEMA as Schema, TABLE_NAME as Table FROM information_schema.tables";
             return connection.Query<TableMetadata>(sql).ToList();
         }
 
