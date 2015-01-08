@@ -1,4 +1,5 @@
-﻿using Chronos.Interfaces;
+﻿using System.Collections.Generic;
+using Chronos.Interfaces;
 using ServiceStack;
 
 namespace Chronos
