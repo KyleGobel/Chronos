@@ -114,17 +114,21 @@ namespace Chronos
         /// <param name="serializer">The serializer to use, must be able to deserialize json to a string dictionary</param>
         /// <param name="json">Json to insert</param>
         /// <param name="tableName">The table to insert to</param>
-        /// <param name="colMappingFunc">The mapping function to use, takes the json key -> and returns the table column name to map to</param>
+        /// <param name="colMappingFunc">The mapping function to use, takes the json key -> and returns the table column name to map to, if none supplied it will use the existing mappings (you have to add them or this will error)</param>
         /// <param name="notifyRowsCopied">optional action to run on x number of rows inserted</param>
         /// <param name="onError">optional action to run on an exception, will throw the error instead of this isn't supplied</param>
-        public void Insert(ISerializer serializer, string json, string tableName, Func<string,string> colMappingFunc, Action<long> notifyRowsCopied = null,
+        public void Insert(ISerializer serializer, string json, string tableName, Func<string,string> colMappingFunc = null, Action<long> notifyRowsCopied = null,
             Action<Exception> onError = null)
         {
             var dictionary = serializer.Deserialize<List<Dictionary<string, string>>>(json);
 
-            var allKeys = dictionary.SelectMany(x => x.Select(y => y.Key)).Distinct();
+            if (colMappingFunc != null)
+            {
+                var allKeys = dictionary.SelectMany(x => x.Select(y => y.Key)).Distinct();
 
-            allKeys.ForEach(x => ColumnMappings.MapColumn(x, colMappingFunc(x)));
+                allKeys.ForEach(x => ColumnMappings.MapColumn(x, colMappingFunc(x)));
+            }
+
 
             var dt = dictionary.ToDataTable();
             Insert(dt, tableName, notifyRowsCopied, onError);
@@ -205,9 +209,32 @@ namespace Chronos
             _mappings = new Dictionary<string, string>();
         }
 
+        /// <summary>
+        /// Adds a dictionary of sourceColumn -> destinationColumn mappings to the existing mappings
+        /// </summary>
+        public BulkInsertColumnMappings AddStringDictionary(Dictionary<string, string> colMappingsToAdd)
+        {
+            foreach (var kvp in colMappingsToAdd)
+            {
+                _mappings.AddOrUpdate(kvp.Key, kvp.Value);
+            }
+
+            return this;
+        }
+
+        public BulkInsertColumnMappings ClearMappings()
+        {
+            _mappings.Clear();
+            return this;
+        }
         public List<SqlBulkCopyColumnMapping> GetMappings()
         {
             return _mappings.Select(x => new SqlBulkCopyColumnMapping(x.Key, x.Value)).ToList();
+        }
+
+        public Dictionary<string, string> GetMappingsAsDictionary()
+        {
+            return _mappings;
         }
         public BulkInsertColumnMappings MapColumnsAsLowercaseUnderscore()
         {
