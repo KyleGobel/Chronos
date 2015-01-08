@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
@@ -73,23 +72,6 @@ namespace Chronos
         private static readonly ILog Log = LogManager.GetLogger(typeof(SqlServerBulkInserter));
         public SqlBulkCopyOptions Options { get; set; }
         public int BulkInsertTimeout { get; set; }
-
-        public SqlServerBulkInserter(string nameOrConnectionString)
-        {
-            try
-            {
-                _connectionString = Configuration.ConfigUtilities.GetConnectionString(nameOrConnectionString);
-            }
-            catch (ConfigurationErrorsException configException)
-            {
-                _connectionString = nameOrConnectionString;
-            }
-            Options = SqlBulkCopyOptions.FireTriggers;
-            BulkInsertTimeout = 0;
-
-            ColumnMappings = new BulkInsertColumnMappings();
-        }
-
         public SqlServerBulkInserter(string nameOrConnectionString,Type type, BulkInsertColumnMappings columnMappings = null)
         {
             _type = type;
@@ -108,52 +90,6 @@ namespace Chronos
 
         public BulkInsertColumnMappings ColumnMappings { get; set; }
 
-        /// <summary>
-        /// Insert json into a table
-        /// </summary>
-        /// <param name="serializer">The serializer to use, must be able to deserialize json to a string dictionary</param>
-        /// <param name="json">Json to insert</param>
-        /// <param name="tableName">The table to insert to</param>
-        /// <param name="colMappingFunc">The mapping function to use, takes the json key -> and returns the table column name to map to</param>
-        /// <param name="notifyRowsCopied">optional action to run on x number of rows inserted</param>
-        /// <param name="onError">optional action to run on an exception, will throw the error instead of this isn't supplied</param>
-        public void Insert(ISerializer serializer, string json, string tableName, Func<string,string> colMappingFunc, Action<long> notifyRowsCopied = null,
-            Action<Exception> onError = null)
-        {
-            var dictionary = serializer.Deserialize<List<Dictionary<string, string>>>(json);
-
-            var allKeys = dictionary.SelectMany(x => x.Select(y => y.Key)).Distinct();
-
-            allKeys.ForEach(x => ColumnMappings.MapColumn(x, colMappingFunc(x)));
-
-            var dt = dictionary.ToDataTable();
-            Insert(dt, tableName, notifyRowsCopied, onError);
-        }
-        public void Insert(DataTable data, string tableName, Action<long> notifyRowsCopied = null,
-            Action<Exception> onError = null)
-        {
-            try
-            {
-                using (var bcp = new SqlBulkCopy(_connectionString, Options))
-                {
-                    ColumnMappings.GetMappings().ForEach(x => bcp.ColumnMappings.Add(x));
-                    bcp.DestinationTableName = tableName;
-                    bcp.SqlRowsCopied +=
-                        (sender, args) => { if (notifyRowsCopied != null) notifyRowsCopied(args.RowsCopied); };
-                    bcp.NotifyAfter = 100;
-                    bcp.BatchSize = 5000;
-                    bcp.BulkCopyTimeout = BulkInsertTimeout;
-                    bcp.WriteToServer(data);
-                }
-            }
-            catch (Exception x)
-            {
-                Log.ErrorFormat("Error bulk inserting", x);
-                if (onError == null) throw;
-
-                onError(x);
-            }
-        }
         public void Insert(IEnumerable items, string tableName, Action<long> notifyRowsCopied = null, Action<Exception> onError = null)
         {
 
@@ -197,11 +133,6 @@ namespace Chronos
         public BulkInsertColumnMappings(Type type)
         {
             _type = type;
-            _mappings = new Dictionary<string, string>();
-        }
-
-        public BulkInsertColumnMappings()
-        {
             _mappings = new Dictionary<string, string>();
         }
 
