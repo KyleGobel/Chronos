@@ -79,6 +79,7 @@ namespace Chronos.AWS
             catch (Exception x)
             {
                 Log.Error("Error uploading to s3", x);
+                throw;
             }
         }
         /// <summary>
