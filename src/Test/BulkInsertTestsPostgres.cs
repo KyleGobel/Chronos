@@ -15,7 +15,7 @@ namespace Test
         [Fact (Skip="No Postgres server")]
         public void CanBulkInsertIntoPostgres()
         {
-            var mappings = new BulkInsertColumnMappings<Db>().MapColumnsAsLowercaseUnderscore();
+            var mappings = new Mappings<Db>().MapAsLowercaseUnderscore();
             Chronos.PostgreSQL.PostgresBulkInserter<Db> bcp = new Chronos.PostgreSQL.PostgresBulkInserter<Db>("Server=127.0.0.1;Port=5432;Database=jinx;User Id=postgres;Password=postgres", mappings);
             var itemsToInsert = new List<Db>
             {
@@ -34,7 +34,7 @@ namespace Test
         [Fact(Skip="No postgres server")]
         public void CanBulkInsertToPostgresNonGenericly()
         {
-            var mappings = new BulkInsertColumnMappings(typeof(Db)).MapColumnsAsLowercaseUnderscore();
+            var mappings = new Mappings(typeof(Db)).MapAsLowercaseUnderscore();
             var bcp = new Chronos.PostgreSQL.PostgresBulkInserter("Server=127.0.0.1;Port=5432;Database=jinx;User Id=postgres;Password=postgres", typeof(Db),mappings);
             var itemsToInsert = new List<Db>
             {

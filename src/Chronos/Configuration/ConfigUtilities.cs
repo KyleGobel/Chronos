@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Reflection;
+using ServiceStack;
 
 namespace Chronos.Configuration
 {
@@ -24,12 +25,12 @@ namespace Chronos.Configuration
             return value;
         }
 
-        public static string GetConnectionStringFromNameOrConnectionString(string nameOrConnectionString)
+        public static string GetConnectionString(string nameOrConnectionString)
         {
             var connStr = "";
             try
             {
-                connStr = GetConnectionString(nameOrConnectionString);
+                connStr = GetConnectionStringFromKey(nameOrConnectionString);
             }
             catch (ConfigurationErrorsException configException)
             {
@@ -37,7 +38,7 @@ namespace Chronos.Configuration
             }
             return connStr;
         }
-        public static string GetConnectionString(string key)
+        private static string GetConnectionStringFromKey(string key)
         {
             var value = ConfigurationManager.ConnectionStrings[key];
             if (value == null)
@@ -55,6 +56,17 @@ namespace Chronos.Configuration
         public static RabbitMqConnectionString GetRabbitMqConnectionString(string appSettingsKey)
         {
             return RabbitMqConnectionString.Parse(GetAppSetting(appSettingsKey));
+        }
+
+        public static string CreatePostgresConnStr(string address, string username, string password, string database, int port = 5432)
+        {
+            return "Server={0};User Id={1};Password={2};Port={3};Database={4}".Fmt(address, username, password, port,
+                database);
+        }
+
+        public static string CreateMsSqlConnStr(string address, string username, string password, string database)
+        {
+            return "Server={0};Database={1};User Id={2};Password={3}".Fmt(address, database, username, password);
         }
         public static T GetAppSetting<T>(string key, T defaultValue)
         {

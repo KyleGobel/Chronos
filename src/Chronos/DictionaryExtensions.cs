@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using ServiceStack;
 
 namespace Chronos
 {
@@ -29,6 +32,29 @@ namespace Chronos
             return result;
         }
 
+        public static T To<T>(this IDictionary<string, object> dict) where T : new()
+        {
+            var type = typeof (T);
+
+            var newT = new T();
+
+            foreach (var kvp in dict)
+            {
+                var prop = type.GetProperty(kvp.Key);
+                if (prop != null)
+                {
+                    if (prop.PropertyType == typeof (DateTime))
+                    {
+                        prop.SetValue(newT, DateTime.Parse(kvp.Value.ToString()));
+                    }
+                    else
+                    {
+                        prop.SetValue(newT, kvp.Value);
+                    }
+                }
+            }
+            return newT;
+        }
 
         /// <summary>
         /// Adds the key value pair if the key doesn't exist in the dictionary, otherwise does nothing

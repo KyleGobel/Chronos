@@ -31,7 +31,7 @@ namespace Chronos.PostgreSQL
         private const string CsvReplacement = "$+$+";
         private static Regex _csvRegex = new Regex(@"("")", RegexOptions.Compiled);
         private const int NotifyAfter = 100;
-        public PostgresBulkInserter(string nameOrConnectionString, Type type, BulkInsertColumnMappings columnMappings = null)
+        public PostgresBulkInserter(string nameOrConnectionString, Type type, Mappings columnMappings = null)
         {
             _type = type;
             try
@@ -42,9 +42,9 @@ namespace Chronos.PostgreSQL
             {
                 _connectionString = nameOrConnectionString;
             }
-            ColumnMappings = columnMappings ?? new BulkInsertColumnMappings(type).MapDirectly();
+            ColumnMappings = columnMappings ?? new Mappings(type).MapDirectly();
         }
-        public BulkInsertColumnMappings ColumnMappings { get; set; }
+        public Mappings ColumnMappings { get; set; }
         public void Insert(IEnumerable items, string tableName, Action<long> notifyRowsCopied = null, Action<Exception> onError = null)
         {
             var targetMethod = typeof(ObjectReader).GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
@@ -53,8 +53,8 @@ namespace Chronos.PostgreSQL
             var castMethod = typeof(Enumerable).GetMethod("Cast", BindingFlags.Static | BindingFlags.Public);
             var castGenericMethod = castMethod.MakeGenericMethod(new Type[] { _type });
 
-            var destinationColumnsString =  ColumnMappings.GetMappings().Select(x => x.DestinationColumn).Aggregate((a, b) => a + "," + b);
-            var sourceColumnsArray = ColumnMappings.GetMappings().Select(x => x.SourceColumn).ToArray();
+            var destinationColumnsString =  ColumnMappings.GetSqlBulkInsertMappings().Select(x => x.DestinationColumn).Aggregate((a, b) => a + "," + b);
+            var sourceColumnsArray = ColumnMappings.GetSqlBulkInsertMappings().Select(x => x.SourceColumn).ToArray();
 
             var objectReader = (ObjectReader)targetGenericMethod.Invoke(null,
                     new[] { castGenericMethod.Invoke(null, new[] { items }), sourceColumnsArray });
@@ -126,7 +126,7 @@ namespace Chronos.PostgreSQL
     }
     public class PostgresBulkInserter<T> : IBulkInserter<T> where T : class
     {
-        public BulkInsertColumnMappings<T> ColumnMappings { get; set; }
+        public Mappings<T> ColumnMappings { get; set; }
 
         private readonly string _connectionString;
         private static readonly ILog Log = LogManager.GetLogger(typeof (PostgresBulkInserter<T>));
@@ -137,16 +137,16 @@ namespace Chronos.PostgreSQL
         private static Regex _csvRegex = new Regex(@"("")", RegexOptions.Compiled);
         private const int NotifyAfter = 100;
 
-        public PostgresBulkInserter(string nameOrConnectionString, BulkInsertColumnMappings<T> columnMappings = null)
+        public PostgresBulkInserter(string nameOrConnectionString, Mappings<T> columnMappings = null)
         {
-            _connectionString = ConfigUtilities.GetConnectionStringFromNameOrConnectionString(nameOrConnectionString);
+            _connectionString = ConfigUtilities.GetConnectionString(nameOrConnectionString);
 
-            ColumnMappings = columnMappings ?? new BulkInsertColumnMappings<T>().MapDirectly();
+            ColumnMappings = columnMappings ?? new Mappings<T>().MapDirectly();
         }
 
         public void Insert(List<T> items,string tableName,Action<long> notifyRowsCopied = null, Action<Exception> onError = null)
         {
-            var mappingsDictionary = ColumnMappings.GetMappings().ToDictionary(x => x.SourceColumn, x => x.DestinationColumn);
+            var mappingsDictionary = ColumnMappings.GetSqlBulkInsertMappings().ToDictionary(x => x.SourceColumn, x => x.DestinationColumn);
             var destinationColumns = mappingsDictionary.Select(x => x.Value).Aggregate((a, b) => a + "," + b);
             var connection = new NpgsqlConnection(_connectionString);
             try

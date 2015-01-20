@@ -8,7 +8,7 @@ namespace Chronos
 {
     public static class StringExtensions
     {
-        public static string ToTitleCase(this string value)
+        public static string ToPascalCase(this string value)
         {
             if (string.IsNullOrEmpty(value))
                 return string.Empty;
