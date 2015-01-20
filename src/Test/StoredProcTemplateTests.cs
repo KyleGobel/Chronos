@@ -16,7 +16,7 @@ namespace Test
         {
 
             var hey = "StartDate".Humanize();
-            var cstring = ConfigUtilities.GetConnectionStringFromNameOrConnectionString("TestDb");
+            var cstring = ConfigUtilities.GetConnectionString("TestDb");
             var html = default(string);
             var eng = new Engine(new TempEngine());
             using (var connection = new SqlConnection(cstring))
