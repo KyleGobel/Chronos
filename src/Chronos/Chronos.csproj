@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="EmbeddedResource.cs" />
     <Compile Include="Interfaces\ITemplateEngine.cs" />
+    <Compile Include="ServiceProcessor.cs" />
     <Compile Include="SqlQueries.cs" />
     <Compile Include="SqlServerBulkInserter.cs" />
     <Compile Include="Compression.cs" />
