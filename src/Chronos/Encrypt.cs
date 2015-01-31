@@ -9,26 +9,41 @@ namespace Chronos
         public static string Sha1(string item)
         {
             var buffer = Encoding.UTF8.GetBytes(item);
-            var cryptoTransformSha1 = new SHA1CryptoServiceProvider();
-            return BitConverter.ToString(cryptoTransformSha1.ComputeHash(buffer)).Replace("-", "").ToLower();
+            return Sha1(buffer);
         }
         public static string Sha256(string item)
         {
-            var crypt = new SHA256Managed();
+            var sha = Sha256(Encoding.UTF8.GetBytes(item));
+            return sha;
+        }
+
+        public static string Sha256(byte[] bytes)
+        {
+            var crypto = new SHA256Managed();
             var hash = String.Empty;
-            var crypto = crypt.ComputeHash(Encoding.UTF8.GetBytes(item), 0, Encoding.UTF8.GetByteCount(item));
-            foreach (var bit in crypto)
+            var bits = crypto.ComputeHash(bytes);
+            foreach (var bit in bits)
             {
                 hash += bit.ToString("x2");
             }
             return hash;
         }
 
+        public static string Sha1(byte[] bytes)
+        {
+            var crypto = new SHA1CryptoServiceProvider();
+            return BitConverter.ToString(crypto.ComputeHash(bytes)).Replace("-", "").ToLower();
+        }
+
         public static string Md5(string text)
         {
+            return Md5(Encoding.UTF8.GetBytes(text));
+        }
+
+        public static string Md5(byte[] bytes)
+        {
             var md5 = MD5.Create();
-            byte[] inputBytes = Encoding.UTF8.GetBytes(text);
-            var hash = md5.ComputeHash(inputBytes);
+            var hash = md5.ComputeHash(bytes);
 
             var sb = new StringBuilder();
             for (int i = 0; i < hash.Length; i++)
