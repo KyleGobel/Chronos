@@ -61,6 +61,7 @@
     <Compile Include="Interfaces\ITemplateEngine.cs" />
     <Compile Include="JsonMessageFormatter.cs" />
     <Compile Include="LoopProcessor.cs" />
+    <Compile Include="Profiling.cs" />
     <Compile Include="SqlQueries.cs" />
     <Compile Include="SqlServerBulkInserter.cs" />
     <Compile Include="Compression.cs" />
