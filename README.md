@@ -3,6 +3,58 @@ Chronos
 
 Chronos is a time saving library with extension methods I use often or find my self re-writing often.
 
+1/31/2015
+
+Protocol Buffers
+=============================
+Added new project Chronos.ProtoBuffers that adds some extensions and things for using the proto-buf format from google.  This takes a dependency on protobuf-net.
+
+Same as with the TSV serializer, you'll need the order attributes on your pocos.
+
+```csharp
+public class MyObj
+{
+	[Order(1)]
+	public string FirstName {get; set;}
+
+	[Order(2)]
+	public string LastName {get; set;}
+
+	[Order(3)]
+	public int Age {get; set;}
+}
+
+var objToSerialize = new MyObj 
+{
+	FirstName = "Kyle",
+	LastName = "Gobel",
+	Age = 29
+};
+```
+
+Then a couple ways to serialize
+```csharp
+var protoBufByteArray = objToSerialize.ToProtoBufByteArray();
+objToSerialize.ToProtoBufFile(@"C:\mySavedObj.bin");
+```
+
+Deserialization is what you would expect
+```csharp
+var myObj = protoBufByteArray.FromProtoBufByteArray();
+var myObjFromFile = @"C:\mySavedObj.bin".FromProtoBufFile();
+```
+
+Added a nice profiling method taken from Sam Saffron and a stack overflow wiki
+http://stackoverflow.com/questions/1047218/benchmarking-small-code-samples-in-c-can-this-implementation-be-improved
+
+changed the ``Console.Write`` to instead use an ``Action<string>`` (and defaults to Console.Write if nothing is supplied) for easier writing to a file or piping the output somewhere.
+
+```csharp
+Profiling.Profile("Quick and dirty profile of some code", 10, () => { /*profiling code */ });
+```
+
+Added overloads for Sha1, Sha256, and Md5 to accept byte arrays
+
 
 Dynamo
 =====================

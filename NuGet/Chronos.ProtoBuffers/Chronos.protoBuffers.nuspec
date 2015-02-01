@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  For more info on this file format visit http://docs.nuget.org/docs/reference/nuspec-reference.
+-->
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">  
+  <metadata>
+    <id>Chronos.ProtoBuffers</id>
+    <version>0.0.0</version>
+    <authors>Kyle Gobel</authors>
+    <description>Protocol Buffers Extension to Chronos</description>
+    <language>en-US</language>
+    <projectUrl>https://github.com/KyleGobel/Chronos/</projectUrl>
+    <dependencies>
+      <dependency id="Chronos" />
+      <dependency id="protobuf-net" version="2.0.0.668"/>
+    </dependencies>
+  </metadata>
+ 
+  <files>
+    <file src="..\..\bin\Chronos.ProtoBuffers.dll" target="lib"/>
+    <file src="..\..\bin\Chronos.ProtoBuffers.pdb" target="lib"/>
+    <file src="..\..\src\Chronos.ProtoBuffers\**\*.cs" target="src" />
+  </files>
+</package>
