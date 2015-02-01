@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EmbeddedResource.cs" />
+    <Compile Include="GenerateRandom.cs" />
     <Compile Include="Interfaces\ITemplateEngine.cs" />
     <Compile Include="JsonMessageFormatter.cs" />
     <Compile Include="LoopProcessor.cs" />

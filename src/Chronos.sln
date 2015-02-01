@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chronos.PostgreSQL", "Chron
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chronos.ProtoBuffers", "Chronos.ProtoBuffers\Chronos.ProtoBuffers.csproj", "{5C5F43C3-CEE3-485C-940E-74D29F7E44A2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark", "Benchmark\Benchmark.csproj", "{6EDD71D1-C824-49E4-9643-6B86896D92A0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +60,10 @@ Global
 		{5C5F43C3-CEE3-485C-940E-74D29F7E44A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C5F43C3-CEE3-485C-940E-74D29F7E44A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C5F43C3-CEE3-485C-940E-74D29F7E44A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EDD71D1-C824-49E4-9643-6B86896D92A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EDD71D1-C824-49E4-9643-6B86896D92A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EDD71D1-C824-49E4-9643-6B86896D92A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EDD71D1-C824-49E4-9643-6B86896D92A0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
