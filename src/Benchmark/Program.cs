@@ -13,6 +13,10 @@ namespace Benchmark
     {
         static void Main(string[] args)
         {
+            var requestItem = new TestDto
+            {
+                DateField1 = DateTime.Now
+            };
 
             var testItem = new TestDto
             {
@@ -22,8 +26,8 @@ namespace Benchmark
                 Field3 = GenerateRandom.String(100),
                 Field4 = GenerateRandom.Int()
             };
-            var proto = testItem.ToProtoBufCacheObj();
-            var json = testItem.ToJsonCacheObj();
+            var proto = requestItem.ToProtoBufCacheObj(testItem);
+            var json = requestItem.ToJsonCacheObj(testItem);
 
             Enumerable.Range(1, 3).ForEach(x =>
             {
@@ -31,16 +35,16 @@ namespace Benchmark
                 Console.WriteLine("-----------------------------------------------");
                 Console.WriteLine("----------Running for {0} iterations--------", iterations);
                 Console.WriteLine("-----------------------------------------------");
-                Profiling.Profile("ProtoBuf Cache Serialization Only", iterations, () => testItem.ToProtoBufCacheObj());
+                Profiling.Profile("ProtoBuf Cache Serialization Only", iterations, () => requestItem.ToProtoBufCacheObj(testItem));
                 Profiling.Profile("ProtoBuf Deserialization Only", iterations, () => proto.FromCache<TestDto>());
-                Profiling.Profile("ProtoBuf Cache Serialize/Deserialize", iterations, () => testItem
-                    .ToProtoBufCacheObj()
+                Profiling.Profile("ProtoBuf Cache Serialize/Deserialize", iterations, () => requestItem
+                    .ToProtoBufCacheObj(testItem)
                     .FromCache<TestDto>());
                 Console.WriteLine("-----------------------------------------------");
-                Profiling.Profile("Json Cache Serialization Only", iterations, () => testItem.ToJsonCacheObj());
+                Profiling.Profile("Json Cache Serialization Only", iterations, () => requestItem.ToJsonCacheObj(testItem));
                 Profiling.Profile("Json Cache Deserialization Only", iterations, () => json.FromCache<TestDto>());
-                Profiling.Profile("Json Cache Serialize/Deserialize", iterations, () => testItem
-                    .ToJsonCacheObj()
+                Profiling.Profile("Json Cache Serialize/Deserialize", iterations, () => requestItem
+                    .ToJsonCacheObj(testItem)
                     .FromCache<TestDto>());
 
             });

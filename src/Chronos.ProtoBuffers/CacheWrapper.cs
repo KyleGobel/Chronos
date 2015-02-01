@@ -29,37 +29,41 @@ namespace Chronos.ProtoBuffers
 
     public static class CacheExtensions
     {
-        public static byte[] ToProtoBufCacheObj<T>(this T obj, string cachePrefix = null)
+        public static string ToCacheKey<TRequestObj>(this TRequestObj obj, string cachePrefix = null)
         {
             var bytes = obj.ToProtoBufByteArray();
+            return (cachePrefix ?? "") + Encrypt.Sha1(bytes);
+        }
+        public static byte[] ToProtoBufCacheObj<TKeyObj, TCacheObj>(this TKeyObj keyObj, TCacheObj cacheObj, string cachePrefix = null)
+        {
+            var key = ToCacheKey(keyObj, cachePrefix);
+            var bytes = cacheObj.ToProtoBufByteArray();
 
-            var cacheKey = (cachePrefix ?? "") + Encrypt.Sha1(bytes);
-
-            var cacheObj = new ProtoBufCacheWrapper
+            var res = new ProtoBufCacheWrapper
             {
                 CacheDate = DateTime.UtcNow,
-                CacheKey = cacheKey,
+                CacheKey = key,
                 ProtoBuffObject = bytes
             };
 
-            return cacheObj.ToProtoBufByteArray();
+            return res.ToProtoBufByteArray();
         }
 
-        public static string ToJsonCacheObj<T>(this T obj, ISerializer serializer = null, string cachePrefix = null)
+        public static string ToJsonCacheObj<TKeyObj, TCacheObj>(this TKeyObj keyObj,TCacheObj cacheObj, ISerializer serializer = null, string cachePrefix = null)
         {
             serializer = serializer ?? new ServiceStackSerializer();
-            var json = serializer.Serialize(obj); 
+            var json = serializer.Serialize(cacheObj);
 
-            var cacheKey = (cachePrefix ?? "") + Encrypt.Sha1(json);
+            var key = ToCacheKey(keyObj, cachePrefix);
 
-            var cacheObj = new JsonCacheWrapper
+            var res = new JsonCacheWrapper
             {
                 CacheDate = DateTime.UtcNow,
-                CacheKey = cacheKey,
+                CacheKey = key,
                 JsonObject = json
             };
 
-            return serializer.Serialize(cacheObj);
+            return serializer.Serialize(res);
         }
 
         public static ProtoBufCacheWrapper FromCacheWrapper(this byte[] cacheObj)
