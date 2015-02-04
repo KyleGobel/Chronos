@@ -32,7 +32,7 @@ namespace Chronos.AWS
         /// <param name="keyName">The 'column' to equal compare against</param>
         /// <param name="keyValueAsString">The value to compare againt (as a string)</param>
         /// <returns>Single json object</returns>
-        public string GetSingle(string tableName, string indexName,string keyName, string keyValueAsString)
+        public string Get(string tableName, string indexName,string keyName, string keyValueAsString)
         {
             var request = new QueryRequest
             {
@@ -95,11 +95,51 @@ namespace Chronos.AWS
             return string.Empty;
         }
 
-        public void WriteDictionary(string tableName, Dictionary<string,object> dictionary)
+        public void WriteSingle(string tableName, Dictionary<string,object> dictionary)
         {
             var transformDictionary = dictionary.ToDictionary(x => x.Key, x => GetAttributeValueFromObject(x.Value));
             _client.PutItem(tableName, transformDictionary);
         }
+
+        public void WriteMany(Dictionary<string,List<Dictionary<string, object>>> items)
+        {
+            var d = new Dictionary<string, List<WriteRequest>>();
+
+            foreach (var kvp in items)
+            {
+                var tableName = kvp.Key;
+                var requests = kvp.Value.Select(x => x
+                    .ToDictionary(
+                        k => k.Key,
+                        k => GetAttributeValueFromObject(k.Value))
+                    )
+                    .Select(x => new WriteRequest(new PutRequest(x)))
+                    .ToList();
+                d.Add(tableName,requests);
+            }
+
+            var res = _client.BatchWriteItem(d);
+        }
+
+        public void WriteMany(string table, List<Dictionary<string, object>> reqs)
+        {
+            var d = reqs.Select(
+                x => new WriteRequest(new PutRequest(
+                    x.ToDictionary(
+                        k => k.Key,
+                        k => GetAttributeValueFromObject(k.Value)))
+                    )
+                )
+                .ToList();
+
+            var res = new Dictionary<string, List<WriteRequest>>();
+
+            _client.BatchWriteItem(new Dictionary<string, List<WriteRequest>>
+            {
+                {table, d}
+            });
+        }
+
 
         private Type[] _numberTypes = new[]
         {
