@@ -39,7 +39,7 @@ namespace Test
             client.WriteSingle("dev_yahoo_ppc", dict);
         }
 
-        [Fact(DisplayName = "Can get a number from dynamo")]
+        [Fact(DisplayName = "Can get a number from dynamo", Skip="no key")]
         public void CanGetNumberANumber()
         {
             var awsCreds = new BasicAWSCredentials(accessKey, secretKey);
