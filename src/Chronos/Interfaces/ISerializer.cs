@@ -4,5 +4,6 @@ namespace Chronos.Interfaces
     {
         T Deserialize<T>(string s);
         string Serialize<T>(T obj);
+        string ParseAsString(object obj);
     }
 }

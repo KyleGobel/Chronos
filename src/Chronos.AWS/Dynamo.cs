@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Amazon;
 using Amazon.DynamoDBv2;
@@ -62,6 +64,75 @@ namespace Chronos.AWS
             return string.Empty;
         }
 
+        public string Get(string tableName, string keyName, string keyValue)
+        {
+            var request = new QueryRequest
+            {
+                TableName = tableName,
+                KeyConditions = new Dictionary<string, Condition>
+                {
+                    {
+                       keyName,
+                       new Condition
+                       {
+                           ComparisonOperator = "EQ",
+                           AttributeValueList = new List<AttributeValue>
+                           {
+                               new AttributeValue { S = keyValue}
+                           }
+                       }
+                    }
+                },
+            };
+
+            var resp = _client.Query(request); 
+            var item = resp.Items.FirstOrDefault();
+            if (item != null)
+            {
+                var dict = item.ToDictionary(x => x.Key, x => GetValueFromAttribute(x.Value));
+                return _serializer.Serialize(dict);               
+            }
+            return string.Empty;
+        }
+
+        public void WriteDictionary(string tableName, Dictionary<string,object> dictionary)
+        {
+            var transformDictionary = dictionary.ToDictionary(x => x.Key, x => GetAttributeValueFromObject(x.Value));
+            _client.PutItem(tableName, transformDictionary);
+        }
+
+        private Type[] _numberTypes = new[]
+        {
+            typeof (int), typeof (float), typeof (decimal), typeof (long)
+        };
+        private AttributeValue GetAttributeValueFromObject(object obj)
+        {
+            if (obj == null)
+            {
+                return new AttributeValue { NULL = true};
+            }
+            var t = obj.GetType();
+            var isNumber = _numberTypes.Contains(obj);
+            if (isNumber)
+                return new AttributeValue() { N = obj.ToString() };
+            else if (t == typeof (string))
+            {
+                return new AttributeValue((string)obj);
+            }
+            else if (t == typeof (bool))
+            {
+                return new AttributeValue { BOOL = (bool)obj};
+            }
+            else if (t.GetInterfaces().Contains(typeof (IEnumerable<string>)))
+            {
+                return new AttributeValue(((IEnumerable<string>)obj).ToList());
+            }
+            else if (t.GetInterfaces().Contains(typeof(IEnumerable)))
+            {
+                return new AttributeValue(_serializer.ParseAsString(obj));
+            }
+            else return new AttributeValue(_serializer.ParseAsString(obj));
+        }
         private object GetValueFromAttribute(AttributeValue value)
         {
             if (value.N != null)

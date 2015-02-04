@@ -68,5 +68,10 @@ namespace Test
         {
             return obj.ToJson();
         }
+
+        public string ParseAsString(object obj)
+        {
+            return obj.SerializeToString();
+        }
     }
 }

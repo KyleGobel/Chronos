@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Amazon;
 using Amazon.Runtime;
 using Chronos.AWS;
@@ -8,8 +9,8 @@ namespace Test
 {
     public class DynamoTests
     {
-        private string accessKey = "You Access Key";
-        private string secretKey = "Your Secret Key";
+        private string accessKey = "";
+        private string secretKey = "";
         [Fact (Skip = "ughhh")]
         public void CanGetJsonFromSecondaryIndex()
         {
@@ -18,6 +19,33 @@ namespace Test
 
             var json = client.GetSingle("dev_conversions", "clickId-index", "clickId",
                 new Guid("0886fc2b-9080-463b-801e-9fe17c33539f").ToString());
+
+            Assert.NotNull(json);
+        }
+
+        [Fact (DisplayName = "Can write a dictionary to dynamo", Skip="no keys")]
+        public void CanWriteDictionary()
+        {
+            var awsCreds = new BasicAWSCredentials(accessKey,secretKey);
+            var client = new Dynamo(awsCreds,RegionEndpoint.USWest2);
+
+            var dict = new Dictionary<string, object>
+            {
+                {"keyword", "test+keyword"},
+                {"ppc", 1.75},
+                {"last_modified", DateTime.UtcNow.ToString("O")}
+            };
+
+            client.WriteDictionary("dev_yahoo_ppc", dict);
+        }
+
+        [Fact(DisplayName = "Can get a number from dynamo")]
+        public void CanGetNumberANumber()
+        {
+            var awsCreds = new BasicAWSCredentials(accessKey, secretKey);
+            var client = new Dynamo(awsCreds, RegionEndpoint.USWest2);
+
+            var json = client.Get("dev_yahoo_ppc", "keyword", "test+keyword");
 
             Assert.NotNull(json);
         }
