@@ -75,7 +75,7 @@ namespace Test
                 firstItem,
                 secondItem
             };
-            client.WriteMany("dev_yahoo_ppc",list);
+            client.WriteMany("dev_yahoo_ppc",list, 10);
         }
     }
 }
