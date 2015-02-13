@@ -121,7 +121,7 @@ namespace Chronos.AWS
             var res = _client.BatchWriteItem(d);
         }
 
-        public void WriteMany(string table, List<Dictionary<string, object>> reqs, int writeThrougput)
+        public void WriteMany(string table, List<Dictionary<string, object>> reqs, int writeThroughput)
         {
             var d = reqs.Select(
                 x => new WriteRequest(new PutRequest(
