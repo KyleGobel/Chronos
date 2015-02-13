@@ -12,8 +12,8 @@ namespace Chronos
         protected CancellationTokenSource Ts;
         protected CancellationToken CancellationToken;
 
-        protected static Action<string> DebugLogAction;
-        protected static Action<string, Exception> FatalLogAction;
+        protected abstract Action<string> DebugLogAction { get; }
+        protected abstract Action<string, Exception> FatalLogAction { get; }
 
         protected LoopProcessor()
         {

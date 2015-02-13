@@ -136,7 +136,7 @@ namespace Chronos.AWS
 
             while (count < d.Count)
             {
-                var items = d.Skip(count).Take(writeThrougput).ToList();
+                var items = d.Skip(count).Take(writeThroughput).ToList();
                 _client.BatchWriteItem(new Dictionary<string, List<WriteRequest>>
                 {
                     {table, items}
