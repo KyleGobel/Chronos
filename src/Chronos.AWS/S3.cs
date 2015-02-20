@@ -161,7 +161,21 @@ namespace Chronos.AWS
                 Log.Error("Error Moving file", ex);
                 return false;
             }
+        }
 
+        public Stream GetFileStream(string keyName)
+        {
+            using (var s3 = new AmazonS3Client(_connectionInfo.AccessKey, _connectionInfo.SecretKey,
+                new AmazonS3Config {ServiceURL = "http://s3.amazonaws.com"}))
+            {
+                 var req = new GetObjectRequest
+                    {
+                        BucketName = _connectionInfo.BucketName,
+                        Key = keyName
+                    };
+                var response = s3.GetObject(req);
+                return response.ResponseStream;
+            }
         }
 
         public long GetTotalFileCount()
