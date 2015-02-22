@@ -5,25 +5,25 @@ namespace Chronos.ProtoBuffers
 {
     public class ProtoBufCacheWrapper
     {
-        [Order(1)]
+        [Order(100)]
         public DateTime CacheDate { get; set; } 
 
-        [Order(3)]
+        [Order(300)]
         public string CacheKey { get; set; }
 
-        [Order(4)]
+        [Order(400)]
         public byte[] ProtoBuffObject { get; set; }
     }
 
     public class JsonCacheWrapper
     {
-        [Order(1)]
+        [Order(1000)]
         public DateTime CacheDate { get; set; } 
 
-        [Order(3)]
+        [Order(3000)]
         public string CacheKey { get; set; }
 
-        [Order(4)]
+        [Order(4000)]
         public string JsonObject { get; set; }
     }
 
