@@ -165,7 +165,8 @@ namespace Chronos.AWS
                     .Replace("$ACCESSKEY$", _connectionInfo.AccessKey)
                     .Replace("$SECRETKEY$", _connectionInfo.SecretKey)
                     .Replace("$TABLENAME$", tableName)
-                    .Replace("$COLUMNLIST$", string.Join(",", columnList));
+                    .Replace("$COLUMNLIST$", string.Join(",", columnList))
+                    .Replace("$PATH$", processingPrefix);
 
                 var primaryKeyCheck = new List<string>();
                 var stagingTableName = tableName + "_staging";
