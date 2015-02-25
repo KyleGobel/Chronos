@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -8,6 +9,8 @@ using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Chronos.Configuration;
+using Chronos.Dapper.Chronos.Dapper;
+using Npgsql;
 using ServiceStack.Logging;
 
 namespace Chronos.AWS
@@ -100,6 +103,116 @@ namespace Chronos.AWS
             {
                 client.PutObject(req);
             }
+        }
+        public static string GetFilename(string path)
+        {
+            const string pattern = @"(?<filename>[^\/]+)$";
+            return Regex.Match(path, pattern).Groups["filename"].Value;
+        }
+
+        public static string Combine(params string[] paths)
+        {
+            var path = string.Empty;
+            if (paths != null && paths.Length > 0)
+            {
+                path = paths[0];
+                for (var i = 1; i < paths.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(paths[i]))
+                    {
+                        path = string.Format("{0}/{1}", path.TrimEnd('/'), paths[i]).TrimStart('/');
+                    }
+                }
+            }
+            return path;
+        }
+
+        /// <summary>
+        /// Copy from s3 to redshift
+        /// </summary>
+        /// <param name="dataPrefix">the s3 location where the data files are located</param>
+        /// <param name="dataFileExtension">the extension of the files to insert</param>
+        /// <param name="processingPrefix">the s3 location where the data files are moved during processing</param>
+        /// <param name="completedPrefix">the s3 location where the data files are moved after copy success</param>
+        /// <param name="errorPrefix">the s3 location where the data files are moved if there is an error</param>
+        /// <param name="tableName">the redshift table to copy to</param>
+        /// <param name="columnList">the columns of the table to copy into, same order as the data files</param>
+        /// <param name="primaryKeyColumns">the columns that are primary keys and should be used to figure out how to merge</param>
+        /// <param name="connectionStringName">the connection string or connection string name of the redshift database</param>
+        /// <param name="errorLog">function to log errors</param>
+        /// <param name="debugLog">function for debug logging</param>
+        public void CopyToRedshift(string dataPrefix, string dataFileExtension, 
+            string processingPrefix, string completedPrefix, string errorPrefix, string tableName, string[] columnList, string[] primaryKeyColumns, string connectionStringName,
+            Action<Exception,string> errorLog, Action<string> debugLog)
+        {
+            debugLog(string.Format("Getting files with extension {0} from {1}", dataFileExtension, dataPrefix));
+            var files = ListFiles(dataPrefix)
+                    .Where(x => x.EndsWith(dataFileExtension))
+                    .Take(100)
+                    .ToList();
+            try
+            {
+                debugLog(string.Format("Moving {0} files to {1}", files.Count, processingPrefix));
+                foreach (var file in files)
+                {
+                    var pFile = Combine(processingPrefix, GetFilename(file));
+                    MoveFile(file, _connectionInfo.BucketName, pFile, _connectionInfo.BucketName);
+                }
+
+                debugLog("Building sql query and primary key check");
+                var sql = EmbeddedResource.Get("copyToRedshift.sql")
+                    .Replace("$COLUMNLIST$", string.Join(",", columnList))
+                    .Replace("$ACCESSKEY$", _connectionInfo.AccessKey)
+                    .Replace("$SECRETKEY$", _connectionInfo.SecretKey)
+                    .Replace("$TABLENAME$", tableName)
+                    .Replace("$COLUMNLIST$", string.Join(",", columnList));
+
+                var primaryKeyCheck = new List<string>();
+                var stagingTableName = tableName + "_staging";
+                foreach (var pkey in primaryKeyColumns)
+                {
+                    var tableKey = tableName + ".[" + pkey + "]";
+                    var stageKey = stagingTableName + ".[" + pkey + "]";
+                    var input = "{tableKey} = {stageKey} or ({tableKey} is null and {stageKey} is null)";
+                    input = Regex.Replace(input, "{tableKey}", tableKey);
+                    input = Regex.Replace(input, "{stageKey}", stageKey);
+                    primaryKeyCheck.Add(input);
+                }
+
+                var primaryKeySql = string.Join(" and ", primaryKeyCheck);
+                sql = sql.Replace("$PRIMARYKEYCHECK$", primaryKeySql);
+
+                debugLog("Copying files to redshift");
+                using (var connection = new NpgsqlConnection(ConfigUtilities.GetConnectionString(connectionStringName)))
+                {
+                    debugLog("Running SQL: " + sql);
+                    connection.Execute(sql, commandTimeout: 1000*60*15);
+                }
+
+                debugLog("Moving files to completed directory");
+                foreach (var file in files.Select(S3.GetFilename))
+                {
+                    var processedFile = Combine(processingPrefix, file);
+                    var completeFile = Combine(completedPrefix, file);
+                    MoveFile(processedFile, _connectionInfo.BucketName, completeFile, _connectionInfo.BucketName);
+                }
+            }
+            catch (Exception exception)
+            {
+                errorLog(exception, "Error in copy to redshift");
+                debugLog("Moving files to error directory");
+                var filesInProcessing = ListFiles(processingPrefix)
+                    .Where(x => x.EndsWith(dataFileExtension))
+                    .ToList();
+
+                foreach (var file in filesInProcessing.Select(S3.GetFilename))
+                {
+                    var processedFile = Combine(processingPrefix, file);
+                    var errorFile = Combine(errorPrefix, file);
+                    MoveFile(processedFile, _connectionInfo.BucketName, errorFile, _connectionInfo.BucketName);
+                }
+            }
+
         }
 
         public void DownloadFiles(string s3FolderName, string saveFolder, bool deleteFromS3AfterDownload)
