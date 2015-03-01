@@ -27,7 +27,7 @@ namespace Chronos
 
         public static List<T> QueryWithMap<T>(this IDbConnection connection, string sql, Func<string, string> mapFunc, object param = null, IDbTransaction transaction = null, bool buffered = true, int? commandTimeout = null, CommandType? commandType = null) where T : new()
         {
-            var dyn = connection.Query<dynamic>(sql).ToList();
+            var dyn = connection.Query<dynamic>(sql,param, transaction, buffered, commandTimeout, commandType).ToList();
             var dictList = dyn.Select(x =>
                 ((IDictionary<string, object>) x)
                     .Where(d => mapFunc(d.Key) != null)
