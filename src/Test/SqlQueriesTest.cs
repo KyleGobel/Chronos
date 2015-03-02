@@ -1,4 +1,6 @@
-﻿using Chronos;
+﻿using System;
+using System.Data.SqlClient;
+using Chronos;
 using Chronos.Configuration;
 using Xunit;
 
