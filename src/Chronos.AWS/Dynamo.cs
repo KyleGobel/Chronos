@@ -64,6 +64,23 @@ namespace Chronos.AWS
             return string.Empty;
         }
 
+        public List<string> GetAll(string tableName, List<string> attributesToGet = null)
+        {
+            var request = new ScanRequest(tableName);
+
+            var resp = attributesToGet == null
+                ? _client.Scan(request)
+                : _client.Scan(tableName, attributesToGet);
+
+            var result = new List<string>();
+            foreach (var item in resp.Items)
+            {
+                var dict = item.ToDictionary(x => x.Key, x => GetValueFromAttribute(x.Value));
+                result.Add(_serializer.Serialize(dict));
+            }
+            return result;
+        }
+
         public string Get(string tableName, string keyName, string keyValue)
         {
             var request = new QueryRequest

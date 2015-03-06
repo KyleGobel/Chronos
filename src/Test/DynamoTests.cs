@@ -10,7 +10,7 @@ namespace Test
     public class DynamoTests
     {
         private string accessKey = "";
-        private string secretKey = "/h";
+        private string secretKey = "";
         [Fact (Skip = "ughhh")]
         public void CanGetJsonFromSecondaryIndex()
         {
@@ -50,7 +50,7 @@ namespace Test
             Assert.NotNull(json);
         }
 
-        [Fact(DisplayName = "Can write many objects to dynamo")]
+        [Fact(DisplayName = "Can write many objects to dynamo", Skip="no key")]
         public void CanWriteManyItems()
         {
             var awsCreds = new BasicAWSCredentials(accessKey, secretKey);
@@ -76,6 +76,28 @@ namespace Test
                 secondItem
             };
             client.WriteMany("dev_yahoo_ppc",list, 10);
+        }
+
+        [Fact(DisplayName = "Can Return an entire table as JSON", Skip = "no key")]
+        public void GetAllReturnsEverything()
+        {
+            var awsCreds = new BasicAWSCredentials(accessKey, secretKey);
+            var client = new Dynamo(awsCreds, RegionEndpoint.USWest2);
+
+            var jsonResults = client.GetAll("dev_yahoo_ppc");
+
+            Assert.NotNull(jsonResults);
+        }
+
+        [Fact(DisplayName = "Can Return an entire table as JSON with attributes specified", Skip="no key")]
+        public void GetAllReturnsEverythingWithAttributes()
+        {
+            var awsCreds = new BasicAWSCredentials(accessKey, secretKey);
+            var client = new Dynamo(awsCreds, RegionEndpoint.USWest2);
+
+            var jsonResults = client.GetAll("dev_yahoo_ppc", new List<string> { "keyword", "ppc"});
+
+            Assert.NotNull(jsonResults);
         }
     }
 }
