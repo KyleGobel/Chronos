@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -129,14 +130,23 @@ namespace Chronos.AWS
 
 
         /// <summary>
-        /// Copy from s3 to redshift
+        /// Copy from s3 to redshift, performing either a merge or a copy depending on the config object
         /// </summary>
-        /// <param name="config">The configuration for the copy, there are NO optional properties</param>
-        public void CopyToRedshift(CopyToRedshiftConfig config)
+        /// <param name="config">The configuration for the copy, the only option property is the primary key columns if you are copying instead of merging</param>
+        public void LoadRedshift(LoadRedshiftConfig config)
         {
-            CopyToRedshift(config.DataDirectoryPrefix, config.DataFileExtension, config.ProcessingDirectoryPrefix,
-                config.CompletedDirectoryPrefix, config.ErrorDirectoryPrefix, config.TableName, config.TableColumns,
-                config.PrimaryKeyColumns, config.ConnectionStringName, config.ErrorLog, config.DebugLog);
+            if (config.PerformMerge)
+            {
+                 MergeToRedshift(config.DataDirectoryPrefix, config.DataFileExtension, config.ProcessingDirectoryPrefix,
+                    config.CompletedDirectoryPrefix, config.ErrorDirectoryPrefix, config.TableName, config.TableColumns,
+                    config.PrimaryKeyColumns, config.ConnectionStringName,config.HeaderRowCount, config.ErrorLog, config.DebugLog);               
+            }
+            else
+            {
+                CopyToRedshift(config.DataDirectoryPrefix, config.DataFileExtension, config.ProcessingDirectoryPrefix,
+                    config.CompletedDirectoryPrefix, config.ErrorDirectoryPrefix, config.TableName, config.TableColumns,
+                    config.ConnectionStringName, config.HeaderRowCount, config.ErrorLog, config.DebugLog);
+            }
         }
 
         /// <summary>
@@ -151,11 +161,12 @@ namespace Chronos.AWS
         /// <param name="columnList">the columns of the table to copy into, same order as the data files</param>
         /// <param name="primaryKeyColumns">the columns that are primary keys and should be used to figure out how to merge</param>
         /// <param name="connectionStringName">the connection string or connection string name of the redshift database</param>
+        /// <param name="headerRowCount">how many of the rows in the text file are header rows</param>
         /// <param name="errorLog">function to log errors</param>
         /// <param name="debugLog">function for debug logging</param>
-        public void CopyToRedshift(string dataPrefix, string dataFileExtension, 
+        public void MergeToRedshift(string dataPrefix, string dataFileExtension, 
             string processingPrefix, string completedPrefix, string errorPrefix, string tableName, string[] columnList, string[] primaryKeyColumns, string connectionStringName,
-            Action<Exception,string> errorLog, Action<string> debugLog)
+            int headerRowCount,Action<Exception,string> errorLog, Action<string> debugLog)
         {
             debugLog(string.Format("Getting files with extension {0} from {1}", dataFileExtension, dataPrefix));
             var files = ListFiles(dataPrefix)
@@ -178,11 +189,12 @@ namespace Chronos.AWS
                 }
 
                 debugLog("Building sql query and primary key check");
-                var sql = EmbeddedResource.Get("copyToRedshift.sql")
+                var sql = EmbeddedResource.Get("mergeToRedshift.sql")
                     .Replace("$COLUMNLIST$", string.Join(",", columnList))
                     .Replace("$ACCESSKEY$", _connectionInfo.AccessKey)
                     .Replace("$SECRETKEY$", _connectionInfo.SecretKey)
                     .Replace("$TABLENAME$", tableName)
+                    .Replace("$HEADERROWS$", headerRowCount.ToString(CultureInfo.InvariantCulture))
                     .Replace("$COLUMNLIST$", string.Join(",", columnList))
                     .Replace("$PATH$", processingPrefix);
 
@@ -231,9 +243,73 @@ namespace Chronos.AWS
                     MoveFile(processedFile, _connectionInfo.BucketName, errorFile, _connectionInfo.BucketName);
                 }
             }
-
         }
 
+        public void CopyToRedshift(string dataPrefix, string dataFileExtension, 
+            string processingPrefix, string completedPrefix, string errorPrefix, string tableName, string[] columnList, string connectionStringName,
+            int headerRowCount,Action<Exception,string> errorLog, Action<string> debugLog)
+        {
+            debugLog(string.Format("Getting files with extension {0} from {1}", dataFileExtension, dataPrefix));
+            var files = ListFiles(dataPrefix)
+                    .Where(x => x.EndsWith(dataFileExtension))
+                    .Take(100)
+                    .ToList();
+
+            if (files.Count == 0)
+            {
+                debugLog("No Files to copy");
+                return;
+            }
+            try
+            {
+                debugLog(string.Format("Moving {0} files to {1}", files.Count, processingPrefix));
+                foreach (var file in files)
+                {
+                    var pFile = Combine(processingPrefix, GetFilename(file));
+                    MoveFile(file, _connectionInfo.BucketName, pFile, _connectionInfo.BucketName);
+                }
+
+                debugLog("Building sql query and primary key check");
+                var sql = EmbeddedResource.Get("copyToRedshift.sql")
+                    .Replace("$COLUMNLIST$", string.Join(",", columnList))
+                    .Replace("$ACCESSKEY$", _connectionInfo.AccessKey)
+                    .Replace("$SECRETKEY$", _connectionInfo.SecretKey)
+                    .Replace("$TABLENAME$", tableName)
+                    .Replace("$HEADERROWS$", headerRowCount.ToString(CultureInfo.InvariantCulture))
+                    .Replace("$COLUMNLIST$", string.Join(",", columnList))
+                    .Replace("$PATH$", processingPrefix);
+
+                debugLog("Copying files to redshift");
+                using (var connection = new NpgsqlConnection(ConfigUtilities.GetConnectionString(connectionStringName)))
+                {
+                    debugLog("Running SQL: " + sql);
+                    connection.Execute(sql, commandTimeout: 1000*60*15);
+                }
+
+                debugLog("Moving files to completed directory");
+                foreach (var file in files.Select(S3.GetFilename))
+                {
+                    var processedFile = Combine(processingPrefix, file);
+                    var completeFile = Combine(completedPrefix, file);
+                    MoveFile(processedFile, _connectionInfo.BucketName, completeFile, _connectionInfo.BucketName);
+                }
+            }
+            catch (Exception exception)
+            {
+                errorLog(exception, "Error in copy to redshift");
+                debugLog("Moving files to error directory");
+                var filesInProcessing = ListFiles(processingPrefix)
+                    .Where(x => x.EndsWith(dataFileExtension))
+                    .ToList();
+
+                foreach (var file in filesInProcessing.Select(S3.GetFilename))
+                {
+                    var processedFile = Combine(processingPrefix, file);
+                    var errorFile = Combine(errorPrefix, file);
+                    MoveFile(processedFile, _connectionInfo.BucketName, errorFile, _connectionInfo.BucketName);
+                }
+            }
+        }
         public void DownloadFiles(string s3FolderName, string saveFolder, bool deleteFromS3AfterDownload)
         {
             DownloadFiles(_connectionInfo.AccessKey, _connectionInfo.SecretKey, _connectionInfo.BucketName, s3FolderName, saveFolder, deleteFromS3AfterDownload);
