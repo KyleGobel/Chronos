@@ -127,6 +127,18 @@ namespace Chronos.AWS
             return path;
         }
 
+
+        /// <summary>
+        /// Copy from s3 to redshift
+        /// </summary>
+        /// <param name="config">The configuration for the copy, there are NO optional properties</param>
+        public void CopyToRedshift(CopyToRedshiftConfig config)
+        {
+            CopyToRedshift(config.DataDirectoryPrefix, config.DataFileExtension, config.ProcessingDirectoryPrefix,
+                config.CompletedDirectoryPrefix, config.ErrorDirectoryPrefix, config.TableName, config.TableColumns,
+                config.PrimaryKeyColumns, config.ConnectionStringName, config.ErrorLog, config.DebugLog);
+        }
+
         /// <summary>
         /// Copy from s3 to redshift
         /// </summary>
@@ -150,6 +162,12 @@ namespace Chronos.AWS
                     .Where(x => x.EndsWith(dataFileExtension))
                     .Take(100)
                     .ToList();
+
+            if (files.Count == 0)
+            {
+                debugLog("No Files to copy");
+                return;
+            }
             try
             {
                 debugLog(string.Format("Moving {0} files to {1}", files.Count, processingPrefix));

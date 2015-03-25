@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CopyToRedshiftConfig.cs" />
     <Compile Include="Dynamo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="S3.cs" />
