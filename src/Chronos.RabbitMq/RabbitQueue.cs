@@ -71,13 +71,16 @@ namespace Chronos.RabbitMq
 
                             if (result.Success)
                             {
+                                if (config.Reply)
+                                {
+                                    channel.BasicPublish(config.ReplyToExchangeName, config.ReplyToRouteKey, false, ea.BasicProperties, Encoding.UTF8.GetBytes(result.ReplyBody));
+                                }
                                 channel.BasicAck(ea.DeliveryTag, false);
                             }
                             else
                             {
                                 channel.BasicNack(ea.DeliveryTag, false, config.RequeueOnFailure);
                             }
-                            channel.BasicPublish(config.ReplyToExchangeName, config.ReplyToRouteKey, false, ea.BasicProperties, Encoding.UTF8.GetBytes(result.ReplyBody));
                         }
                         else
                         {
