@@ -27,7 +27,68 @@ namespace Chronos.RabbitMq
 
         public bool RequeueOnFailure { get; set; }
 
-       
+
+        /// <summary>
+        /// Handle a queue
+        /// </summary>
+        /// <param name="config">Various configuration options about how to handle the queue</param>
+        /// <param name="handler">Given a string message, return a result a object indcating what to do next</param>
+        public void HandleQueue(HandleQueueConfig config, Func<string, HandleQueueResult> handler)
+        {
+            var factory = new ConnectionFactory
+            {
+                HostName = _connStr.Host,
+                Port = _connStr.Port,
+                UserName = _connStr.Username,
+                Password = _connStr.Password
+            };
+
+            using (var connection = factory.CreateConnection())
+            {
+                using (var channel = connection.CreateModel())
+                {
+                    var consumer = new QueueingBasicConsumer(channel);
+
+                    //only get one message at a time
+                    channel.BasicQos(0, 1, false);
+
+                    channel.BasicConsume(config.QueueName, false, consumer);
+                    bool cancel = false;
+
+                    while (!cancel)
+                    {
+                        var ea = default(BasicDeliverEventArgs);
+                        if (consumer.Queue.Dequeue(config.QueueReadTimeoutMs, out ea))
+                        {
+                            var json = Encoding.UTF8.GetString(ea.Body);
+
+                            var result = handler(json);
+
+                            if (result.Cancel)
+                            {
+                                cancel = true;
+                            }
+
+                            if (result.Success)
+                            {
+                                channel.BasicAck(ea.DeliveryTag, false);
+                            }
+                            else
+                            {
+                                channel.BasicNack(ea.DeliveryTag, false, config.RequeueOnFailure);
+                            }
+                            channel.BasicPublish(config.ReplyToExchangeName, config.ReplyToRouteKey, false, ea.BasicProperties, Encoding.UTF8.GetBytes(result.ReplyBody));
+                        }
+                        else
+                        {
+                            cancel = true;
+                        }
+                    }
+                }
+            }
+
+
+        }
         public void HandleMessages<T>(Func<T, bool> handler)
         {
              var factory = new ConnectionFactory
