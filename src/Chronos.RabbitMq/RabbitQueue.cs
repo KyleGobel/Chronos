@@ -89,8 +89,67 @@ namespace Chronos.RabbitMq
                     }
                 }
             }
+        }
+        public void HandleQueueMultiple(HandleQueueConfig config, int messagesToRecv, Func<List<BasicDeliverEventArgs>,Dictionary<BasicDeliverEventArgs, HandleQueueResult>> handler)
+        {
+            var factory = new ConnectionFactory
+            {
+                HostName = _connStr.Host,
+                Port = _connStr.Port,
+                UserName = _connStr.Username,
+                Password = _connStr.Password
+            };
 
+            using (var connection = factory.CreateConnection())
+            {
+                using (var channel = connection.CreateModel())
+                {
+                    var consumer = new QueueingBasicConsumer(channel);
 
+                    //only get one message at a time
+                    channel.BasicQos(0, 1, false);
+
+                    channel.BasicConsume(config.QueueName, false, consumer);
+                    bool cancel = false;
+
+                    while (!cancel)
+                    {
+                        var ea = default(BasicDeliverEventArgs);
+
+                        int msgCount = 0;
+
+                        var deliveryArgs = new List<BasicDeliverEventArgs>();
+                        while (consumer.Queue.Dequeue(config.QueueReadTimeoutMs, out ea) && msgCount < messagesToRecv)
+                        {
+                           deliveryArgs.Add(ea);
+                            msgCount += 1;
+                        }
+
+                        var results = handler(deliveryArgs);
+
+                        foreach (var result in results)
+                        {
+                            if (result.Value.Success)
+                            {
+                                if (config.Reply)
+                                {
+                                    channel.BasicPublish(config.ReplyToExchangeName, config.ReplyToRouteKey, false, result.Key.BasicProperties, Encoding.UTF8.GetBytes(result.Value.ReplyBody));
+                                }
+                                channel.BasicAck(result.Key.DeliveryTag, false);
+                            }
+                            else
+                            {
+                                channel.BasicNack(result.Key.DeliveryTag, false, config.RequeueOnFailure);
+                            }
+                        }
+
+                        if (results.Any(x => x.Value.Cancel))
+                        {
+                            cancel = true;
+                        }
+                    }
+                }
+            }
         }
         public void HandleMessages<T>(Func<T, bool> handler)
         {
