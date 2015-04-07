@@ -90,7 +90,7 @@ namespace Chronos.RabbitMq
                 }
             }
         }
-        public void HandleQueueMultiple(HandleQueueConfig config, ushort messagesToRecv, Func<Dictionary<ulong, string>,Dictionary<ulong, HandleQueueResult>> handler)
+        public void HandleQueueMultiple(HandleQueueConfig config, ushort messagesToRecv, Func<Dictionary<ulong, string>,Dictionary<ushort, HandleQueueResult>> handler)
         {
             var factory = new ConnectionFactory
             {
