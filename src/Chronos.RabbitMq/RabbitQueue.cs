@@ -90,7 +90,7 @@ namespace Chronos.RabbitMq
                 }
             }
         }
-        public void HandleQueueMultiple(HandleQueueConfig config, int messagesToRecv, Func<Dictionary<ulong, string>,Dictionary<ulong, HandleQueueResult>> handler)
+        public void HandleQueueMultiple(HandleQueueConfig config, ushort messagesToRecv, Func<Dictionary<ulong, string>,Dictionary<ulong, HandleQueueResult>> handler)
         {
             var factory = new ConnectionFactory
             {
@@ -107,7 +107,7 @@ namespace Chronos.RabbitMq
                     var consumer = new QueueingBasicConsumer(channel);
 
                     //only get one message at a time
-                    channel.BasicQos(0, 1, false);
+                    channel.BasicQos(0, messagesToRecv, false);
 
                     channel.BasicConsume(config.QueueName, false, consumer);
                     bool cancel = false;
