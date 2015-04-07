@@ -90,7 +90,7 @@ namespace Chronos.RabbitMq
                 }
             }
         }
-        public void HandleQueueMultiple(HandleQueueConfig config, int messagesToRecv, Func<List<BasicDeliverEventArgs>,Dictionary<BasicDeliverEventArgs, HandleQueueResult>> handler)
+        public void HandleQueueMultiple(HandleQueueConfig config, int messagesToRecv, Func<Dictionary<ulong, string>,Dictionary<ulong, HandleQueueResult>> handler)
         {
             var factory = new ConnectionFactory
             {
@@ -118,10 +118,10 @@ namespace Chronos.RabbitMq
 
                         int msgCount = 0;
 
-                        var deliveryArgs = new List<BasicDeliverEventArgs>();
+                        var deliveryArgs = new Dictionary<ulong, string>();
                         while (consumer.Queue.Dequeue(config.QueueReadTimeoutMs, out ea) && msgCount < messagesToRecv)
                         {
-                           deliveryArgs.Add(ea);
+                            deliveryArgs.Add(ea.DeliveryTag, Encoding.UTF8.GetString(ea.Body));
                             msgCount += 1;
                         }
 
@@ -133,13 +133,13 @@ namespace Chronos.RabbitMq
                             {
                                 if (config.Reply)
                                 {
-                                    channel.BasicPublish(config.ReplyToExchangeName, config.ReplyToRouteKey, false, result.Key.BasicProperties, Encoding.UTF8.GetBytes(result.Value.ReplyBody));
+                                    channel.BasicPublish(config.ReplyToExchangeName, config.ReplyToRouteKey, false, ea.BasicProperties, Encoding.UTF8.GetBytes(result.Value.ReplyBody));
                                 }
-                                channel.BasicAck(result.Key.DeliveryTag, false);
+                                channel.BasicAck(result.Key, false);
                             }
                             else
                             {
-                                channel.BasicNack(result.Key.DeliveryTag, false, config.RequeueOnFailure);
+                                channel.BasicNack(result.Key, false, config.RequeueOnFailure);
                             }
                         }
 
