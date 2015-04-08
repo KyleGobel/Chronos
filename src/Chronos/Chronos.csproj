@@ -63,7 +63,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChronosLogManager.cs" />
     <Compile Include="EmbeddedResource.cs" />
     <Compile Include="GenerateRandom.cs" />
     <Compile Include="Interfaces\ITemplateEngine.cs" />
