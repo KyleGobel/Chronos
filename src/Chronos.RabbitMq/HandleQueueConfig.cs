@@ -10,17 +10,6 @@
         public bool RequeueOnFailure { get; set; } 
 
         /// <summary>
-        /// If you are forwarding the result onward, the exchange
-        /// to forward to's name
-        /// </summary>
-        public string ReplyToExchangeName { get; set; }
-
-        /// <summary>
-        /// The RouteKey if you forwarding the message
-        /// </summary>
-        public string ReplyToRouteKey { get; set; }
-
-        /// <summary>
         /// The Queue name that we are handling
         /// </summary>
         public string QueueName { get; set; }

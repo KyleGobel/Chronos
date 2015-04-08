@@ -33,7 +33,7 @@ namespace Chronos.RabbitMq
         /// </summary>
         /// <param name="config">Various configuration options about how to handle the queue</param>
         /// <param name="handler">Given a string message, return a result a object indcating what to do next</param>
-        public void HandleQueue(HandleQueueConfig config, Func<string, HandleQueueResult> handler)
+        public void HandleQueue(HandleQueueConfig config, Func<QueueMessage, HandleQueueResult> handler)
         {
             var factory = new ConnectionFactory
             {
@@ -60,9 +60,13 @@ namespace Chronos.RabbitMq
                         var ea = default(BasicDeliverEventArgs);
                         if (consumer.Queue.Dequeue(config.QueueReadTimeoutMs, out ea))
                         {
-                            var json = Encoding.UTF8.GetString(ea.Body);
+                            var qMsg = new QueueMessage()
+                            {
+                                MessageProperties = ea.BasicProperties,
+                                RawMessage = ea.Body
+                            };
 
-                            var result = handler(json);
+                            var result = handler(qMsg);
 
                             if (result.Cancel)
                             {
@@ -71,9 +75,9 @@ namespace Chronos.RabbitMq
 
                             if (result.Success)
                             {
-                                if (config.Reply)
+                                if (ea.BasicProperties.ReplyToAddress != null)
                                 {
-                                    channel.BasicPublish(config.ReplyToExchangeName, config.ReplyToRouteKey, false, ea.BasicProperties, Encoding.UTF8.GetBytes(result.ReplyBody));
+                                    channel.BasicPublish(ea.BasicProperties.ReplyToAddress.ExchangeName,ea.BasicProperties.ReplyToAddress.RoutingKey, false, ea.BasicProperties, Encoding.UTF8.GetBytes(result.ReplyBody));
                                 }
                                 channel.BasicAck(ea.DeliveryTag, false);
                             }
@@ -90,7 +94,7 @@ namespace Chronos.RabbitMq
                 }
             }
         }
-        public void HandleQueueMultiple(HandleQueueConfig config, ushort messagesToRecv, Func<Dictionary<ulong, string>,Dictionary<ulong, HandleQueueResult>> handler)
+        public void HandleQueueMultiple(HandleQueueConfig config, ushort messagesToRecv, Func<Dictionary<ulong, QueueMessage>,Dictionary<ulong, HandleQueueResult>> handler)
         {
             var factory = new ConnectionFactory
             {
@@ -118,10 +122,15 @@ namespace Chronos.RabbitMq
 
                         int msgCount = 0;
 
-                        var deliveryArgs = new Dictionary<ulong, string>();
+                        var deliveryArgs = new Dictionary<ulong, QueueMessage>();
                         while (consumer.Queue.Dequeue(config.QueueReadTimeoutMs, out ea) && msgCount < messagesToRecv)
                         {
-                            deliveryArgs.Add(ea.DeliveryTag, Encoding.UTF8.GetString(ea.Body));
+                            var qMsg = new QueueMessage
+                            {
+                                MessageProperties = ea.BasicProperties,
+                                RawMessage = ea.Body
+                            };
+                            deliveryArgs.Add(ea.DeliveryTag, qMsg);
                             msgCount += 1;
                         }
 
@@ -131,9 +140,11 @@ namespace Chronos.RabbitMq
                         {
                             if (result.Value.Success)
                             {
-                                if (config.Reply)
+                                if (result.Value.ReplyToProperties.IsReplyToPresent())
                                 {
-                                    channel.BasicPublish(config.ReplyToExchangeName, config.ReplyToRouteKey, false, ea.BasicProperties, Encoding.UTF8.GetBytes(result.Value.ReplyBody));
+                                    channel.BasicPublish(result.Value.ReplyToProperties.ReplyToAddress.ExchangeName, 
+                                        result.Value.ReplyToProperties.ReplyToAddress.RoutingKey, 
+                                        false, ea.BasicProperties, Encoding.UTF8.GetBytes(result.Value.ReplyBody));
                                 }
                                 channel.BasicAck(result.Key, false);
                             }
