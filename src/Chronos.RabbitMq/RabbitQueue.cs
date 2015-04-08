@@ -269,6 +269,107 @@ namespace Chronos.RabbitMq
             }
         }
 
+        /// <summary>
+        /// Creates a new queue, if the queue already exists there is no effect
+        /// </summary>
+        /// <param name="queueName">The name of the queue</param>
+        /// <param name="durable">Should the queue survive a server restart?</param>
+        /// <param name="autoDelete">Should the queue be deleted when every consumer is finished with it (has no effect to existing queues)</param>
+        /// <param name="exchangeToBind">If this isn't null the queue will be bound to this exchange</param>
+        /// <param name="routingKeyToBind">The routing key to bind to if not empty</param>
+        public void DeclareQueue(string queueName, bool durable = true, bool autoDelete = false, string exchangeToBind = null, string routingKeyToBind = "")
+        {
+            var factory = new ConnectionFactory
+            {
+                HostName = _connStr.Host,
+                Port = _connStr.Port,
+                UserName = _connStr.Username,
+                Password = _connStr.Password
+            };
+
+            using (var connection = factory.CreateConnection())
+            using (var channel = connection.CreateModel())
+            {
+                channel.QueueDeclare(queueName, durable, exclusive: false, autoDelete: autoDelete, arguments: null);
+                if (exchangeToBind != null)
+                {
+                    channel.QueueBind(queueName, exchangeToBind, routingKeyToBind);
+                }
+            }
+        }
+
+
+        public void Publish(byte[] message,
+            string contentType = "application/json",
+            string messageId = "",
+            string type = "",
+            bool persistant = true,
+            string exchange = "",
+            string routingKey = "",
+            string replyTo = "",
+            Dictionary<string, object> headers = null)
+        {
+            Publish(new List<byte[]> { message}, contentType, messageId, type, persistant,exchange, routingKey, replyTo, headers);
+        }
+        public void Publish(string message,
+            string contentType = "application/json",
+            string messageId = "",
+            string type = "",
+            bool persistant = true,
+            string exchange = "",
+            string routingKey = "",
+            string replyTo = "",
+            Dictionary<string, object> headers = null)
+        {
+            Publish(new List<byte[]> { Encoding.UTF8.GetBytes(message)}, contentType, messageId, type, persistant,exchange, routingKey, replyTo, headers);
+        }
+        public void Publish(List<string> messages,
+            string contentType = "application/json",
+            string messageId = "",
+            string type = "",
+            bool persistant = true,
+            string exchange = "",
+            string routingKey = "",
+            string replyTo = "",
+            Dictionary<string, object> headers = null)
+        {
+            Publish(messages.Select(x => Encoding.UTF8.GetBytes(x)).ToList(), contentType, messageId, type, persistant,exchange, routingKey, replyTo, headers);
+        }
+        public void Publish(List<byte[]> messages, 
+            string contentType = "application/json", 
+            string messageId = "",
+            string type = "", 
+            bool persistant = true, 
+            string exchange = "", 
+            string routingKey = "", 
+            string replyTo = "",
+            Dictionary<string, object> headers = null)
+        {
+             var factory = new ConnectionFactory
+            {
+                HostName = _connStr.Host,
+                Port = _connStr.Port,
+                UserName = _connStr.Username,
+                Password = _connStr.Password
+            };
+            using (var connection = factory.CreateConnection())
+            using (var channel = connection.CreateModel())
+            {
+                var basicProps = channel.CreateBasicProperties();
+                basicProps.ContentType = contentType;
+                basicProps.MessageId = messageId;
+                basicProps.SetPersistent(persistant);
+                basicProps.Type = type;
+                basicProps.ReplyTo = replyTo;
+                basicProps.Headers = headers;
+
+                foreach (var msg in messages)
+                {
+                    basicProps.Timestamp = new AmqpTimestamp(DateTime.UtcNow.ToUnixTimestamp());
+                    channel.BasicPublish(exchange,routingKey, basicProps, msg);
+                }
+            }
+        }
         public void PublishMessages<T>(List<T> messages)
         {
             var queueName = this.GetInQueueName(typeof (T));
