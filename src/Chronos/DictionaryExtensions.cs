@@ -56,6 +56,31 @@ namespace Chronos
             return newT;
         }
 
+        public static T GetValueOrDefault<T>(this Dictionary<string, object> dict, string key,
+          T defaultValue = default(T))
+        {
+            if (dict.ContainsKey(key))
+            {
+                var value = dict[key].ToString().ToOrDefaultValue<T>();
+
+                if (value.Equals(default(T)))
+                    return defaultValue;
+
+                return value;
+            }
+            return defaultValue;
+        }
+
+        public static Dictionary<string, object> AsCaseInsensitiveDictionary(this Dictionary<string, object> dictionary)
+        {
+            var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var kvp in dictionary)
+            {
+                dict.Add(kvp.Key, kvp.Value);
+            }
+            return dict;
+        }
         /// <summary>
         /// Adds the key value pair if the key doesn't exist in the dictionary, otherwise does nothing
         /// </summary>
