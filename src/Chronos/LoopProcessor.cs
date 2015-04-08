@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace Chronos
 {
@@ -12,8 +13,7 @@ namespace Chronos
         protected CancellationTokenSource Ts;
         protected CancellationToken CancellationToken;
 
-        protected abstract Action<string> DebugLogAction { get; }
-        protected abstract Action<string, Exception> FatalLogAction { get; }
+        private static readonly ILogger Log = Serilog.Log.ForContext<LoopProcessor>();
 
         protected LoopProcessor()
         {
@@ -24,7 +24,7 @@ namespace Chronos
             {
                 for (;;)
                 {
-                    if (DebugLogAction != null) { DebugLogAction("Starting process loop"); }
+                    Log.Debug("Starting process loop");
                     var startTime = Stopwatch.StartNew();
                     try
                     {
@@ -32,18 +32,11 @@ namespace Chronos
                     }
                     catch (Exception x)
                     {
-                        if (FatalLogAction != null)
-                        {
-                            FatalLogAction("Fatal Error in Loop Processor", x);
-                        }
+                        Log.Fatal(x, "Fatal Error in Loop Processor");
                         Environment.Exit(-1);
                     }
 
-                    if (DebugLogAction != null)
-                    {
-                        DebugLogAction(string.Format("Finished process loop in {0}, waiting {1}",
-                            startTime.Elapsed.ToString("g"), TimeBetweenLoops.ToString("g")));
-                    }
+                    Log.Debug("Finished process loop in {Time}, waiting {SleepTime}", startTime.Elapsed, TimeBetweenLoops);
 
                     Thread.Sleep(TimeBetweenLoops);
                     if (CancellationToken.IsCancellationRequested)

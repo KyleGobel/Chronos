@@ -10,6 +10,9 @@
     <description>A Helper/Utility library</description>
     <language>en-US</language>
     <projectUrl>https://github.com/KyleGobel/Chronos/</projectUrl>
+      <dependencies>
+      <dependency id="Serilog" />
+    </dependencies>
   </metadata>
  
   <files>

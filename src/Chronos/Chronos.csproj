@@ -36,6 +36,12 @@
     <Reference Include="FastMember">
       <HintPath>..\packages\FastMember.1.0.0.11\lib\net40\FastMember.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog">
+      <HintPath>..\packages\Serilog.1.4.214\lib\net45\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.FullNetFx">
+      <HintPath>..\packages\Serilog.1.4.214\lib\net45\Serilog.FullNetFx.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Common">
       <HintPath>..\packages\ServiceStack.Common.4.0.31\lib\net40\ServiceStack.Common.dll</HintPath>
     </Reference>
@@ -57,6 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChronosLogManager.cs" />
     <Compile Include="EmbeddedResource.cs" />
     <Compile Include="GenerateRandom.cs" />
     <Compile Include="Interfaces\ITemplateEngine.cs" />
