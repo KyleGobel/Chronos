@@ -318,7 +318,7 @@ namespace Chronos.RabbitMq
             using (var channel = connection.CreateModel())
             {
                 channel.QueueDeclare(queueName, durable, exclusive: false, autoDelete: autoDelete, arguments: null);
-                Log.Debug("Declared Queue {QueueName}, Auto Delete: {AutoDelete", autoDelete);
+                Log.Debug("Declared Queue {QueueName}, Auto Delete: {AutoDelete}",queueName, autoDelete);
                 if (exchangeToBind != null)
                 {
                     channel.QueueBind(queueName, exchangeToBind, routingKeyToBind);
