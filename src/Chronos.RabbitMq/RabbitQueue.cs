@@ -6,6 +6,7 @@ using Chronos.Configuration;
 using Chronos.Interfaces;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Serilog;
 using ServiceStack.Logging;
 
 namespace Chronos.RabbitMq
@@ -16,7 +17,7 @@ namespace Chronos.RabbitMq
   
         private readonly RabbitMqConnectionString _connStr;
         private readonly ISerializer _serializer;
-        private static readonly ILog Log = LogManager.GetLogger(typeof(RabbitQueue));
+        private static readonly ILogger Log = Serilog.Log.ForContext<RabbitQueue>();
 
         public RabbitQueue(RabbitMqConnectionString connStr, ISerializer serializer = null, bool requeueOnFailure = true)
         {
@@ -50,6 +51,7 @@ namespace Chronos.RabbitMq
                     var consumer = new QueueingBasicConsumer(channel);
 
                     //only get one message at a time
+                    Log.Verbose("Setting Prefetch count to 1");
                     channel.BasicQos(0, 1, false);
 
                     channel.BasicConsume(config.QueueName, false, consumer);
@@ -70,20 +72,26 @@ namespace Chronos.RabbitMq
 
                             if (result.Cancel)
                             {
+                                Log.Information("Canceling queue handling");
                                 cancel = true;
                             }
 
                             if (result.Success)
                             {
-                                if (ea.BasicProperties.ReplyToAddress != null)
+                                if (ea.BasicProperties.ReplyToAddress != null || result.ReplyToProperties.ReplyToAddress != null)
                                 {
-                                    channel.BasicPublish(ea.BasicProperties.ReplyToAddress.ExchangeName,ea.BasicProperties.ReplyToAddress.RoutingKey, false, ea.BasicProperties, Encoding.UTF8.GetBytes(result.ReplyBody));
+                                    var rta = result.ReplyToProperties.ReplyToAddress ??
+                                                     ea.BasicProperties.ReplyToAddress;
+                                    Log.Debug("Publishing message to {ExchangeAddress}",rta.ToString());
+                                    channel.BasicPublish(rta.ExchangeName,rta.RoutingKey, false, result.ReplyToProperties, Encoding.UTF8.GetBytes(result.ReplyBody));
                                 }
                                 channel.BasicAck(ea.DeliveryTag, false);
+                                Log.Debug("Message Acknowledged");
                             }
                             else
                             {
                                 channel.BasicNack(ea.DeliveryTag, false, config.RequeueOnFailure);
+                                Log.Debug("Message Negative Acknowleded with retry: {Reque}", config.RequeueOnFailure);
                             }
                         }
                         else
@@ -111,6 +119,7 @@ namespace Chronos.RabbitMq
                     var consumer = new QueueingBasicConsumer(channel);
 
                     //only get one message at a time
+                    Log.Verbose("Setting Prefetch count to {PrefetchCount}", messagesToRecv);
                     channel.BasicQos(0, messagesToRecv, false);
 
                     channel.BasicConsume(config.QueueName, false, consumer);
@@ -123,6 +132,7 @@ namespace Chronos.RabbitMq
                         int msgCount = 0;
 
                         var deliveryArgs = new Dictionary<ulong, QueueMessage>();
+                        Log.Debug("Consuming Messages");
                         while (consumer.Queue.Dequeue(config.QueueReadTimeoutMs, out ea) && msgCount < messagesToRecv)
                         {
                             var qMsg = new QueueMessage
@@ -134,28 +144,34 @@ namespace Chronos.RabbitMq
                             msgCount += 1;
                         }
 
+                        Log.Debug("Handling Messages");
                         var results = handler(deliveryArgs);
 
                         foreach (var result in results)
                         {
+                            var initialMsg = deliveryArgs[result.Key];
                             if (result.Value.Success)
                             {
-                                if (result.Value.ReplyToProperties.IsReplyToPresent())
+                                if (initialMsg.MessageProperties.ReplyToAddress != null || result.Value.ReplyToProperties.ReplyToAddress != null)
                                 {
-                                    channel.BasicPublish(result.Value.ReplyToProperties.ReplyToAddress.ExchangeName, 
-                                        result.Value.ReplyToProperties.ReplyToAddress.RoutingKey, 
-                                        false, ea.BasicProperties, Encoding.UTF8.GetBytes(result.Value.ReplyBody));
+                                    var rta = result.Value.ReplyToProperties.ReplyToAddress ??
+                                              initialMsg.MessageProperties.ReplyToAddress;
+                                    channel.BasicPublish(rta.ExchangeName, rta.RoutingKey, 
+                                        false, result.Value.ReplyToProperties, Encoding.UTF8.GetBytes(result.Value.ReplyBody));
                                 }
                                 channel.BasicAck(result.Key, false);
+                                Log.Debug("{MessageId} Message Acknowledged", initialMsg.MessageProperties.MessageId);
                             }
                             else
                             {
                                 channel.BasicNack(result.Key, false, config.RequeueOnFailure);
+                                Log.Debug("{MessageId} Message Negative Acknowledged.  Retry: {Reque}", initialMsg.MessageProperties.MessageId, config.RequeueOnFailure);
                             }
                         }
 
                         if (results.Any(x => x.Value.Cancel))
                         {
+                            Log.Information("Canceling queue handling"); ;
                             cancel = true;
                         }
                     }
@@ -180,24 +196,24 @@ namespace Chronos.RabbitMq
                     channel.BasicQos(0,1,false);
                     var queueName = this.GetInQueueName(typeof (T));
                     channel.BasicConsume(queueName, false, consumer);
-                    Log.DebugFormat("Consuming Queue: {0}", queueName);
+                    Log.Debug("Consuming Queue: {Queue}", queueName);
 
                     while (true)
                     {
                         var ea = consumer.Queue.Dequeue();
 
                         var message = _serializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body));
-                        Log.DebugFormat("Message received and deserialized");
+                        Log.Debug("Message received and deserialized");
                         var result = handler(message);
 
                         if (result)
                         {
-                            Log.DebugFormat("Message acknowledged");
+                            Log.Debug("Message acknowledged");
                             channel.BasicAck(ea.DeliveryTag, false);
                         }
                         else
                         {
-                            Log.DebugFormat("Message negative acknowledge with reque: {0}", RequeueOnFailure);
+                            Log.Debug("Message negative acknowledge with reque: {RequeOnFailure}", RequeueOnFailure);
                             channel.BasicNack(ea.DeliveryTag, false, RequeueOnFailure);
                         }
                     }
@@ -248,14 +264,14 @@ namespace Chronos.RabbitMq
                     channel.BasicQos(0,1,false);
                     channel.BasicConsume(queueName, false, consumer);
 
-                    Log.DebugFormat("Consuming Queue: {0}", queueName);
+                    Log.Debug("Consuming Queue: {Queue}", queueName);
                     var ea = default(BasicDeliverEventArgs);
 
                     var messageReceived = consumer.Queue.Dequeue((int)Timeout.TotalMilliseconds, out ea);
 
                     if (!messageReceived)
                     {
-                        Log.DebugFormat("No message received after timeout of {0}", Timeout);
+                        Log.Debug("No message received after timeout of {Timeout}", Timeout);
                         receivedMsg = false;
                         return;
                     }
@@ -263,17 +279,17 @@ namespace Chronos.RabbitMq
 
 
                     var message = _serializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body));
-                    Log.DebugFormat("Message received and deserialized");
+                    Log.Debug("Message received and deserialized");
                     var result = handler(message);
 
                     if (result)
                     {
-                        Log.DebugFormat("Message acknowledged");
+                        Log.Debug("Message acknowledged");
                         channel.BasicAck(ea.DeliveryTag, false);
                     }
                     else
                     {
-                        Log.DebugFormat("Message negative acknowledge with reque: {0}", RequeueOnFailure);
+                        Log.Debug("Message negative acknowledge with reque: {RequeueOnFailure}", RequeueOnFailure);
                         channel.BasicNack(ea.DeliveryTag, false, RequeueOnFailure);
                     }
                 }
@@ -302,9 +318,11 @@ namespace Chronos.RabbitMq
             using (var channel = connection.CreateModel())
             {
                 channel.QueueDeclare(queueName, durable, exclusive: false, autoDelete: autoDelete, arguments: null);
+                Log.Debug("Declared Queue {QueueName}, Auto Delete: {AutoDelete", autoDelete);
                 if (exchangeToBind != null)
                 {
                     channel.QueueBind(queueName, exchangeToBind, routingKeyToBind);
+                    Log.Debug("Bound Queue {QueueName} to {ExchangeAddress}", queueName, new PublicationAddress(null, exchangeToBind, routingKeyToBind).ToString());
                 }
             }
         }
@@ -411,7 +429,7 @@ namespace Chronos.RabbitMq
                         channel.BasicPublish("", queueName, basicProperties, messageBody);
                     }
 
-                    Log.DebugFormat("{0} Message(s) published to queue {1}", messages.Count, queueName);
+                    Log.Debug("{MessageCount} Message(s) published to queue {QueueName}", messages.Count, queueName);
                 }
             }
 
