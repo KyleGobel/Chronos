@@ -78,10 +78,13 @@ namespace Chronos.RabbitMq
 
                             if (result.Success)
                             {
-                                if (ea.BasicProperties.ReplyToAddress != null || result.ReplyToProperties.ReplyToAddress != null)
+                                if (result.ReplyBody != null 
+                                    &&
+                                    result.ReplyToProperties != null
+                                    &&
+                                    result.ReplyToProperties.ReplyToAddress != null)
                                 {
-                                    var rta = result.ReplyToProperties.ReplyToAddress ??
-                                                     ea.BasicProperties.ReplyToAddress;
+                                    var rta = result.ReplyToProperties.ReplyToAddress;
                                     Log.Debug("Publishing message to {ExchangeAddress}",rta.ToString());
                                     channel.BasicPublish(rta.ExchangeName,rta.RoutingKey, false, result.ReplyToProperties, Encoding.UTF8.GetBytes(result.ReplyBody));
                                 }
@@ -152,10 +155,13 @@ namespace Chronos.RabbitMq
                             var initialMsg = deliveryArgs[result.Key];
                             if (result.Value.Success)
                             {
-                                if (initialMsg.MessageProperties.ReplyToAddress != null || result.Value.ReplyToProperties.ReplyToAddress != null)
+                                if (result.Value.ReplyBody != null 
+                                    &&
+                                    result.Value.ReplyToProperties != null
+                                    &&
+                                    result.Value.ReplyToProperties.ReplyToAddress != null)
                                 {
-                                    var rta = result.Value.ReplyToProperties.ReplyToAddress ??
-                                              initialMsg.MessageProperties.ReplyToAddress;
+                                    var rta = result.Value.ReplyToProperties.ReplyToAddress;
                                     channel.BasicPublish(rta.ExchangeName, rta.RoutingKey, 
                                         false, result.Value.ReplyToProperties, Encoding.UTF8.GetBytes(result.Value.ReplyBody));
                                 }
