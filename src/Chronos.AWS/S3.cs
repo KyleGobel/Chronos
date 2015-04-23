@@ -190,19 +190,21 @@ namespace Chronos.AWS
                 }
 
                 debugLog("Building sql query and primary key check");
+                var stagingTableName = GenerateRandom.String(6) + "_staging";
                 var sql = EmbeddedResource.Get("mergeToRedshift.sql")
                     .Replace("$COLUMNLIST$", string.Join(",", columnList))
                     .Replace("$ACCESSKEY$", _connectionInfo.AccessKey)
                     .Replace("$SECRETKEY$", _connectionInfo.SecretKey)
                     .Replace("$BUCKET$", _connectionInfo.BucketName)
+                    .Replace("$TEMPTABLE", stagingTableName)
                     .Replace("$TABLENAME$", tableName)
                     .Replace("$DELIMETER$", delimeter)
                     .Replace("$HEADERROWS$", headerRowCount.ToString(CultureInfo.InvariantCulture))
                     .Replace("$COLUMNLIST$", string.Join(",", columnList))
                     .Replace("$PATH$", processingPrefix);
+                
 
                 var primaryKeyCheck = new List<string>();
-                var stagingTableName = tableName + "_staging";
                 foreach (var pkey in primaryKeyColumns)
                 {
                     var tableKey = tableName + ".[" + pkey + "]";
