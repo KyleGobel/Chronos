@@ -196,7 +196,7 @@ namespace Chronos.AWS
                     .Replace("$ACCESSKEY$", _connectionInfo.AccessKey)
                     .Replace("$SECRETKEY$", _connectionInfo.SecretKey)
                     .Replace("$BUCKET$", _connectionInfo.BucketName)
-                    .Replace("$TEMPTABLE", stagingTableName)
+                    .Replace("$TEMPTABLE$", stagingTableName)
                     .Replace("$TABLENAME$", tableName)
                     .Replace("$DELIMETER$", delimeter)
                     .Replace("$HEADERROWS$", headerRowCount.ToString(CultureInfo.InvariantCulture))
