@@ -185,7 +185,7 @@ namespace Chronos.AWS
                 debugLog(string.Format("Moving {0} files to {1}", files.Count, processingPrefix));
                 foreach (var file in files)
                 {
-                    var pFile = Combine(processingPrefix, GetFilename(file));
+                    var pFile = file.Replace(dataPrefix, processingPrefix);
                     MoveFile(file, _connectionInfo.BucketName, pFile, _connectionInfo.BucketName);
                 }
 
@@ -224,10 +224,10 @@ namespace Chronos.AWS
                 }
 
                 debugLog("Moving files to completed directory");
-                foreach (var file in files.Select(S3.GetFilename))
+                foreach (var file in files)
                 {
-                    var processedFile = Combine(processingPrefix, file);
-                    var completeFile = Combine(completedPrefix, file);
+                    var processedFile = file.Replace(dataPrefix, processingPrefix);
+                    var completeFile = file.Replace(dataPrefix, completedPrefix);
                     MoveFile(processedFile, _connectionInfo.BucketName, completeFile, _connectionInfo.BucketName);
                 }
             }
