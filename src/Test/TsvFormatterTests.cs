@@ -9,6 +9,19 @@ namespace Test
     [Trait("TsvFormatter", "")]
     public class TsvFormatterTests
     {
+        [Fact(DisplayName = "Can Serialize with headers")]
+        public void CanSerializeWithHeaders()
+        {
+            TsvConfig.Delimiter = "|";
+            var record = new YahooTypeDetail
+            {
+                Date = DateTime.UtcNow
+            };
+
+            var tsv = new[] {record}.ToList().ToTsv();
+
+            Assert.NotNull(tsv);
+        }
 
         [Fact(DisplayName = "Can Deserialize to obj with primitive types")]
         public void CanDeserializeToObjectWithPrimitives()
@@ -54,6 +67,47 @@ namespace Test
             Assert.Equal(3, objs.Count);
         }
 
+    }
+    public class YahooTypeDetail
+    {
+        [DataMember(Order = 1)]
+        public DateTime Date { get; set; }
+
+        [DataMember(Order = 2)]
+        public string SourceTag { get; set; }
+
+        [DataMember(Order = 3)]
+        public string TypeTag { get; set; }
+
+        [DataMember(Order = 4)]
+        public int Searches { get; set; }
+
+        [DataMember(Order = 5)]
+        public int BiddedSearches { get; set; }
+
+        [DataMember(Order = 6)]
+        public int BiddedResults { get; set; }
+
+        [DataMember(Order = 7)]
+        public int BiddedClicks { get; set; }
+
+        [DataMember(Order = 8)]
+        public decimal GrossRevenue { get; set; }
+
+        [DataMember(Order = 9)]
+        public decimal Coverage { get; set; }
+
+        [DataMember(Order = 10)]
+        public decimal Ctr { get; set; }
+
+        [DataMember(Order = 11)]
+        public decimal Ppc { get; set; }
+
+        [DataMember(Order = 12)]
+        public decimal? Quality { get; set; }
+
+        [DataMember(Order = 13)]
+        public int? ListingIndex { get; set; }
     }
     public class ExampleObject2
     {

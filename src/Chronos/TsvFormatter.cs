@@ -109,7 +109,7 @@ namespace Chronos
         {
             var names = new List<string>();
           
-            foreach(var prop in t.GetProperties().Where(p => HasOrderAttribute(p)).OrderBy(x => GetOrder(x)))
+            foreach(var prop in t.GetProperties().Where(p => HasOrderAttribute(p) || HasDataMemberAttribute(p)).OrderBy(x => GetOrder(x)))
             {
                 var dispNameAttr = prop.GetCustomAttributes(false)
                     .FirstOrDefault(x => x.GetType().Name == "DisplayNameAttribute");
