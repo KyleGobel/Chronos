@@ -63,9 +63,8 @@ namespace Chronos
             {
                 var value = dict[key].ToString().ToOrDefaultValue<T>();
 
-                if (value.Equals(default(T)))
+                if (value == null || value.Equals(default(T)))
                     return defaultValue;
-
                 return value;
             }
             return defaultValue;
