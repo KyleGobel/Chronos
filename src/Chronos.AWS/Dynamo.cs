@@ -213,7 +213,7 @@ namespace Chronos.AWS
             }
             if (value.S != null)
                 return value.S;
-            if (value.SS != null)
+            if (value.SS != null && value.SS.Any())
                 return value.SS;
             if (value.NULL)
             {
