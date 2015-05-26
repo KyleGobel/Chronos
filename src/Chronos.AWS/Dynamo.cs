@@ -213,7 +213,13 @@ namespace Chronos.AWS
             }
             if (value.S != null)
                 return value.S;
-            return null;
+            if (value.SS != null)
+                return value.SS;
+            if (value.NULL)
+            {
+                return null;
+            }
+            return value.BOOL;
         }
     }
 }
