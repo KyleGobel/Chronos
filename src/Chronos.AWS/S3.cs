@@ -190,7 +190,7 @@ namespace Chronos.AWS
                 }
 
                 debugLog("Building sql query and primary key check");
-                var stagingTableName = GenerateRandom.String(6) + "_staging";
+                var stagingTableName = GenerateRandom.String(6).ToLower() + "_staging";
                 var sql = EmbeddedResource.Get("mergeToRedshift.sql")
                     .Replace("$COLUMNLIST$", string.Join(",", columnList))
                     .Replace("$ACCESSKEY$", _connectionInfo.AccessKey)
@@ -241,11 +241,11 @@ namespace Chronos.AWS
                     .Where(x => x.EndsWith(dataFileExtension))
                     .ToList();
 
-                foreach (var file in filesInProcessing.Select(S3.GetFilename))
+                foreach (var file in filesInProcessing)
                 {
-                    var processedFile = Combine(processingPrefix, file);
-                    var errorFile = Combine(errorPrefix, file);
-                    MoveFile(processedFile, _connectionInfo.BucketName, errorFile, _connectionInfo.BucketName);
+                    var errorFile = file.Replace(processingPrefix, errorPrefix);
+                    //var processedFile = Combine(processingPrefix, file);
+                    MoveFile(file, _connectionInfo.BucketName, errorFile, _connectionInfo.BucketName);
                 }
             }
         }
@@ -309,11 +309,11 @@ namespace Chronos.AWS
                     .Where(x => x.EndsWith(dataFileExtension))
                     .ToList();
 
-                foreach (var file in filesInProcessing.Select(S3.GetFilename))
+                foreach (var file in filesInProcessing)
                 {
-                    var processedFile = Combine(processingPrefix, file);
-                    var errorFile = Combine(errorPrefix, file);
-                    MoveFile(processedFile, _connectionInfo.BucketName, errorFile, _connectionInfo.BucketName);
+                    var errorFile = file.Replace(processingPrefix, errorPrefix);
+                    //var processedFile = Combine(processingPrefix, file);
+                    MoveFile(file, _connectionInfo.BucketName, errorFile, _connectionInfo.BucketName);
                 }
             }
         }
