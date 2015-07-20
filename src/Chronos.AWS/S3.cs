@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Amazon;
@@ -64,6 +65,38 @@ namespace Chronos.AWS
         private const string FilepathPattern =
             @"^[\/\\]*(?<folder>.+[\/\\])*(?<filename_without_extension>.+)[\.](?<extension>.+)$";
 
+        public void UploadStringData(string data, string savePath)
+        {
+            if (string.IsNullOrEmpty(data))
+            {
+                throw new ArgumentException("data");
+            }
+            if (string.IsNullOrEmpty(savePath))
+            {
+                throw new ArgumentException("savePath");
+            }
+
+            try
+            {
+                var bytes = Encoding.UTF8.GetBytes(data);
+                var req = new PutObjectRequest
+                {
+                    BucketName = _connectionInfo.BucketName,
+                    Key = savePath,
+                    InputStream = new MemoryStream(bytes)
+                };
+                using (var client = new AmazonS3Client(_connectionInfo.AccessKey, _connectionInfo.SecretKey,
+                    new AmazonS3Config {ServiceURL = "http://s3.amazonaws.com"}))
+                {
+                    client.PutObject(req);
+                }
+            }
+            catch (Exception x)
+            {
+                Log.Error("Error uploading to s3", x);
+                throw;
+            }
+        }
         public void CompressAndUploadStringData(string data, string savePath)
         {
             if (string.IsNullOrEmpty(data))
