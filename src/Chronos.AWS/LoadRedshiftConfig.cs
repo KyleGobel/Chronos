@@ -21,6 +21,7 @@ namespace Chronos.AWS
         public string ConnectionStringName { get; set; }
         public Action<Exception, string> ErrorLog { get; set; }
         public string Delimeter { get; set; }
+        public bool NullCheckPrimaryKeys { get; set; }
         public Action<string> DebugLog { get; set; }
     }
 }

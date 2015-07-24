@@ -172,7 +172,7 @@ namespace Chronos.AWS
             {
                  MergeToRedshift(config.DataDirectoryPrefix, config.DataFileExtension, config.ProcessingDirectoryPrefix,
                     config.CompletedDirectoryPrefix, config.ErrorDirectoryPrefix, config.Delimeter, config.TableName, config.TableColumns,
-                    config.PrimaryKeyColumns, config.ConnectionStringName,config.HeaderRowCount, config.ErrorLog, config.DebugLog);               
+                    config.PrimaryKeyColumns, config.ConnectionStringName,config.HeaderRowCount, config.ErrorLog, config.DebugLog, config.NullCheckPrimaryKeys);               
             }
             else
             {
@@ -200,7 +200,7 @@ namespace Chronos.AWS
         /// <param name="debugLog">function for debug logging</param>
         public void MergeToRedshift(string dataPrefix, string dataFileExtension, 
             string processingPrefix, string completedPrefix, string errorPrefix, string delimeter,string tableName, string[] columnList, string[] primaryKeyColumns, string connectionStringName,
-            int headerRowCount,Action<Exception,string> errorLog, Action<string> debugLog)
+            int headerRowCount,Action<Exception,string> errorLog, Action<string> debugLog, bool nullCheckPrimaryKeys)
         {
             debugLog(string.Format("Getting files with extension {0} from {1}", dataFileExtension, dataPrefix));
             var files = ListFiles(dataPrefix)
@@ -242,7 +242,7 @@ namespace Chronos.AWS
                 {
                     var tableKey = tableName + ".[" + pkey + "]";
                     var stageKey = stagingTableName + ".[" + pkey + "]";
-                    var input = "{tableKey} = {stageKey} or ({tableKey} is null and {stageKey} is null)";
+                    var input = nullCheckPrimaryKeys ? "{tableKey} = {stageKey} or ({tableKey} is null and {stageKey} is null)" : "{tableKey} = {stageKey}";
                     input = Regex.Replace(input, "{tableKey}", tableKey);
                     input = Regex.Replace(input, "{stageKey}", stageKey);
                     primaryKeyCheck.Add(input);
