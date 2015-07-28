@@ -24,6 +24,10 @@ namespace Chronos.AWS
             _client = new AmazonDynamoDBClient(credentials, region);
         }
 
+        public AmazonDynamoDBClient AmazonDynamoDbClient
+        {
+            get { return _client; }
+        } 
         /// <summary>
         /// Gets a single record from dynamodb returned as json
         /// </summary>
@@ -116,6 +120,12 @@ namespace Chronos.AWS
         {
             var transformDictionary = dictionary.ToDictionary(x => x.Key, x => GetAttributeValueFromObject(x.Value));
             _client.PutItem(tableName, transformDictionary);
+        }
+
+        public DeleteItemResponse DeleteSingle(string tableName, Dictionary<string, object> dictionary)
+        {
+            var transformDictionary = dictionary.ToDictionary(x => x.Key, x => GetAttributeValueFromObject(x.Value));
+            return _client.DeleteItem(tableName, transformDictionary);
         }
 
         public void WriteMany(Dictionary<string,List<Dictionary<string, object>>> items)
