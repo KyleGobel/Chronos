@@ -1,18 +1,13 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
-using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Chronos.Configuration;
 using Chronos.Interfaces;
 using FastMember;
@@ -45,19 +40,24 @@ namespace Chronos.PostgreSQL
             ColumnMappings = columnMappings ?? new Mappings(type).MapDirectly();
         }
         public Mappings ColumnMappings { get; set; }
-        public void Insert(IEnumerable items, string tableName, Action<long> notifyRowsCopied = null, Action<Exception> onError = null)
+
+        public void Insert(IEnumerable items, string tableName, Action<long> notifyRowsCopied = null,
+            Action<Exception> onError = null)
         {
-            var targetMethod = typeof(ObjectReader).GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
-            var targetGenericMethod = targetMethod.MakeGenericMethod(new Type[] { _type });
+            var targetMethod = typeof (ObjectReader).GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
+            var targetGenericMethod = targetMethod.MakeGenericMethod(new Type[] {_type});
 
-            var castMethod = typeof(Enumerable).GetMethod("Cast", BindingFlags.Static | BindingFlags.Public);
-            var castGenericMethod = castMethod.MakeGenericMethod(new Type[] { _type });
+            var castMethod = typeof (Enumerable).GetMethod("Cast", BindingFlags.Static | BindingFlags.Public);
+            var castGenericMethod = castMethod.MakeGenericMethod(new Type[] {_type});
 
-            var destinationColumnsString =  ColumnMappings.GetSqlBulkInsertMappings().Select(x => x.DestinationColumn).Aggregate((a, b) => a + "," + b);
+            var destinationColumnsString =
+                ColumnMappings.GetSqlBulkInsertMappings()
+                    .Select(x => x.DestinationColumn)
+                    .Aggregate((a, b) => a + "," + b);
             var sourceColumnsArray = ColumnMappings.GetSqlBulkInsertMappings().Select(x => x.SourceColumn).ToArray();
 
-            var objectReader = (ObjectReader)targetGenericMethod.Invoke(null,
-                    new[] { castGenericMethod.Invoke(null, new[] { items }), sourceColumnsArray });
+            var objectReader = (ObjectReader) targetGenericMethod.Invoke(null,
+                new[] {castGenericMethod.Invoke(null, new[] {items}), sourceColumnsArray});
 
             var connection = new NpgsqlConnection(_connectionString);
             try
@@ -69,59 +69,54 @@ namespace Chronos.PostgreSQL
                 Log.Error(x);
                 if (onError == null) throw;
                 onError(x);
-            };
+            }
 
-            var bulk = new NpgsqlCopyIn(
-                String.Format(CultureInfo.InvariantCulture, "COPY {0}({1}) FROM STDIN WITH CSV", tableName,
-                    destinationColumnsString), connection);
+            var copyCommand = String.Format(CultureInfo.InvariantCulture, "COPY {0}({1}) FROM STDIN WITH CSV", tableName,
+                destinationColumnsString);
 
-            Log.DebugFormat("Starting bulk insert into '{0}'", tableName);
-            try
+            using (var writer = connection.BeginTextImport(copyCommand))
             {
-                bulk.Start();
 
-                var stream = bulk.CopyStream;
-                var writer = new StreamWriter(stream);
-
-                var row = 0;
-                IDataReader reader = objectReader as IDataReader;
-                while (reader.Read())
+                Log.DebugFormat("Starting bulk insert into '{0}'", tableName);
+                try
                 {
-                    for (var i = 0; i < reader.FieldCount; i++)
+                    var row = 0;
+                    IDataReader reader = objectReader as IDataReader;
+                    while (reader.Read())
                     {
-                        if (i > 0)
-                            writer.Write(CsvDelimiter);
-                        object value = reader.GetValue(i);
-                        if (value != null)
+                        for (var i = 0; i < reader.FieldCount; i++)
                         {
-                            writer.Write(CsvQuote);
-                            writer.Write(_csvRegex.Replace(value.ToString(), CsvReplacement));
-                            writer.Write(CsvQuote);
+                            if (i > 0)
+                                writer.Write(CsvDelimiter);
+                            object value = reader.GetValue(i);
+                            if (value != null)
+                            {
+                                writer.Write(CsvQuote);
+                                writer.Write(_csvRegex.Replace(value.ToString(), CsvReplacement));
+                                writer.Write(CsvQuote);
+                            }
                         }
-                    }
-                    writer.WriteLine();
+                        writer.WriteLine();
 
-                    row++;
-                    if (row % NotifyAfter == 0)
-                    {
-                        if (notifyRowsCopied != null)
+                        row++;
+                        if (row%NotifyAfter == 0)
                         {
-                            notifyRowsCopied(row);
+                            if (notifyRowsCopied != null)
+                            {
+                                notifyRowsCopied(row);
+                            }
                         }
                     }
+                    writer.Flush();
                 }
-                writer.Flush();
-                bulk.End();
-            }
-            catch (Exception x)
-            {
-                Log.ErrorFormat("Error bulk inserting", x);
-                bulk.Cancel(x.Message);
-                if (onError == null) throw;
+                catch (Exception x)
+                {
+                    Log.ErrorFormat("Error bulk inserting", x);
+                    if (onError == null) throw;
 
-                onError(x);
+                    onError(x);
+                }
             }
-          
         }
     }
     public class PostgresBulkInserter<T> : IBulkInserter<T> where T : class
@@ -159,32 +154,32 @@ namespace Chronos.PostgreSQL
                 if (onError == null) throw;
                 onError(x);
             }
-            var bulk =new NpgsqlCopyIn(
-                    String.Format(CultureInfo.InvariantCulture, "COPY {0}({1}) FROM STDIN WITH CSV", tableName, destinationColumns), connection);
-
-            try
+            var copyCommand = String.Format(CultureInfo.InvariantCulture, "COPY {0}({1}) FROM STDIN WITH CSV", tableName,
+                destinationColumns);
+            using (var w = connection.BeginTextImport(copyCommand))
             {
-                RunInsert(bulk, tableName,items,mappingsDictionary.Select(x => x.Key).ToArray(), notifyRowsCopied); 
-            }
-            catch (Exception x)
-            {
-                Log.ErrorFormat("Error bulk inserting", x);
-                bulk.Cancel(x.Message);
-                if (onError == null) throw;
+                try
+                {
+                    RunInsert(w, tableName,items,mappingsDictionary.Select(x => x.Key).ToArray(), notifyRowsCopied); 
+                }
+                catch (Exception x)
+                {
+                    Log.ErrorFormat("Error bulk inserting", x);
+                    if (onError == null) throw;
 
-                onError(x);
+                    onError(x);
+                }               
             }
+
+
 
         }
 
-        private void RunInsert(NpgsqlCopyIn bulk, string tableName, IEnumerable<T> items, string[] sourceColumns, Action<long> notifyRowsCopied = null)
+        private void RunInsert(TextWriter writer, string tableName, IEnumerable<T> items, string[] sourceColumns, Action<long> notifyRowsCopied = null)
         {
             Log.DebugFormat("Starting bulk insert into '{0}'", tableName);
 
-            bulk.Start();
 
-            var stream = bulk.CopyStream;
-            var writer = new StreamWriter(stream);
 
             var row = 0;
             using (IDataReader reader = ObjectReader.Create(items,sourceColumns ))
@@ -216,7 +211,6 @@ namespace Chronos.PostgreSQL
                 }
             }
             writer.Flush();
-            bulk.End();
         }
     }
 }
