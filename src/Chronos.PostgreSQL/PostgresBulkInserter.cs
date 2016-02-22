@@ -191,7 +191,7 @@ namespace Chronos.PostgreSQL
                         if (i > 0)
                             writer.Write(CsvDelimiter);
                         object value = reader.GetValue(i);
-                        if (value != null)
+                        if (value != null && value.GetType().Name != "DBNull")
                         {
                             writer.Write(CsvQuote);
                             writer.Write(_csvRegex.Replace(value.ToString(), CsvReplacement));
