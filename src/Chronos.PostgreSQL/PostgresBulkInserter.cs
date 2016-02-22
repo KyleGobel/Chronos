@@ -13,7 +13,6 @@ using Chronos.Interfaces;
 using FastMember;
 using Npgsql;
 using ServiceStack.Logging;
-using static System.String;
 
 namespace Chronos.PostgreSQL
 {
@@ -60,62 +59,65 @@ namespace Chronos.PostgreSQL
             var objectReader = (ObjectReader) targetGenericMethod.Invoke(null,
                 new[] {castGenericMethod.Invoke(null, new[] {items}), sourceColumnsArray});
 
-            var connection = new NpgsqlConnection(_connectionString);
-            try
-            {
-                connection.Open();
-            }
-            catch (Exception x)
-            {
-                Log.Error(x);
-                if (onError == null) throw;
-                onError(x);
-            }
-
-            var copyCommand = Format(CultureInfo.InvariantCulture, "COPY {0}({1}) FROM STDIN WITH CSV", tableName,
-                destinationColumnsString);
-
-            using (var writer = connection.BeginTextImport(copyCommand))
+            using (var connection = new NpgsqlConnection(_connectionString))
             {
 
-                Log.DebugFormat("Starting bulk insert into '{0}'", tableName);
                 try
                 {
-                    var row = 0;
-                    IDataReader reader = objectReader as IDataReader;
-                    while (reader.Read())
-                    {
-                        for (var i = 0; i < reader.FieldCount; i++)
-                        {
-                            if (i > 0)
-                                writer.Write(CsvDelimiter);
-                            object value = reader.GetValue(i);
-                            if (value != null)
-                            {
-                                writer.Write(CsvQuote);
-                                writer.Write(_csvRegex.Replace(value.ToString(), CsvReplacement));
-                                writer.Write(CsvQuote);
-                            }
-                        }
-                        writer.WriteLine();
-
-                        row++;
-                        if (row%NotifyAfter == 0)
-                        {
-                            if (notifyRowsCopied != null)
-                            {
-                                notifyRowsCopied(row);
-                            }
-                        }
-                    }
-                    writer.Flush();
+                    connection.Open();
                 }
                 catch (Exception x)
                 {
-                    Log.ErrorFormat("Error bulk inserting", x);
+                    Log.Error(x);
                     if (onError == null) throw;
-
                     onError(x);
+                }
+
+                var copyCommand = string.Format(CultureInfo.InvariantCulture, "COPY {0}({1}) FROM STDIN WITH CSV", tableName,
+                    destinationColumnsString);
+
+                using (var writer = connection.BeginTextImport(copyCommand))
+                {
+
+                    Log.DebugFormat("Starting bulk insert into '{0}'", tableName);
+                    try
+                    {
+                        var row = 0;
+                        IDataReader reader = objectReader as IDataReader;
+                        while (reader.Read())
+                        {
+                            for (var i = 0; i < reader.FieldCount; i++)
+                            {
+                                if (i > 0)
+                                    writer.Write(CsvDelimiter);
+                                object value = reader.GetValue(i);
+                                if (value != null)
+                                {
+                                    writer.Write(CsvQuote);
+                                    writer.Write(_csvRegex.Replace(value.ToString(), CsvReplacement));
+                                    writer.Write(CsvQuote);
+                                }
+                            }
+                            writer.WriteLine();
+
+                            row++;
+                            if (row%NotifyAfter == 0)
+                            {
+                                if (notifyRowsCopied != null)
+                                {
+                                    notifyRowsCopied(row);
+                                }
+                            }
+                        }
+                        writer.Flush();
+                    }
+                    catch (Exception x)
+                    {
+                        Log.ErrorFormat("Error bulk inserting", x);
+                        if (onError == null) throw;
+
+                        onError(x);
+                    }
                 }
             }
         }
