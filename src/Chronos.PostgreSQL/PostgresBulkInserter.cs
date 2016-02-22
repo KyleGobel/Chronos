@@ -13,6 +13,7 @@ using Chronos.Interfaces;
 using FastMember;
 using Npgsql;
 using ServiceStack.Logging;
+using static System.String;
 
 namespace Chronos.PostgreSQL
 {
@@ -71,7 +72,7 @@ namespace Chronos.PostgreSQL
                 onError(x);
             }
 
-            var copyCommand = String.Format(CultureInfo.InvariantCulture, "COPY {0}({1}) FROM STDIN WITH CSV", tableName,
+            var copyCommand = Format(CultureInfo.InvariantCulture, "COPY {0}({1}) FROM STDIN WITH CSV", tableName,
                 destinationColumnsString);
 
             using (var writer = connection.BeginTextImport(copyCommand))
@@ -143,35 +144,36 @@ namespace Chronos.PostgreSQL
         {
             var mappingsDictionary = ColumnMappings.GetSqlBulkInsertMappings().ToDictionary(x => x.SourceColumn, x => x.DestinationColumn);
             var destinationColumns = mappingsDictionary.Select(x => x.Value).Aggregate((a, b) => a + "," + b);
-            var connection = new NpgsqlConnection(_connectionString);
-            try
-            {
-                connection.Open();
-            }
-            catch (Exception x)
-            {
-                Log.Error(x);
-                if (onError == null) throw;
-                onError(x);
-            }
-            var copyCommand = String.Format(CultureInfo.InvariantCulture, "COPY {0}({1}) FROM STDIN WITH CSV", tableName,
-                destinationColumns);
-            using (var w = connection.BeginTextImport(copyCommand))
+            using (var connection = new NpgsqlConnection(_connectionString))
             {
                 try
                 {
-                    RunInsert(w, tableName,items,mappingsDictionary.Select(x => x.Key).ToArray(), notifyRowsCopied); 
+                    connection.Open();
                 }
                 catch (Exception x)
                 {
-                    Log.ErrorFormat("Error bulk inserting", x);
+                    Log.Error(x);
                     if (onError == null) throw;
-
                     onError(x);
-                }               
+                }
+                var copyCommand = string.Format(CultureInfo.InvariantCulture, "COPY {0}({1}) FROM STDIN WITH CSV",
+                    tableName,
+                    destinationColumns);
+                using (var w = connection.BeginTextImport(copyCommand))
+                {
+                    try
+                    {
+                        RunInsert(w, tableName, items, mappingsDictionary.Select(x => x.Key).ToArray(), notifyRowsCopied);
+                    }
+                    catch (Exception x)
+                    {
+                        Log.ErrorFormat("Error bulk inserting", x);
+                        if (onError == null) throw;
+
+                        onError(x);
+                    }
+                }
             }
-
-
 
         }
 
