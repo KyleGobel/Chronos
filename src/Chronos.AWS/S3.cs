@@ -296,12 +296,18 @@ namespace Chronos.AWS
                 debugLog("No Files to copy");
                 return;
             }
+            var batchId = Guid.NewGuid().ToString("N");
+            var batchProcessDir = S3.Combine(processingPrefix, batchId + "/");
             try
             {
                 debugLog(string.Format("Moving {0} files to {1}", files.Count, processingPrefix));
+
+                // create a batch id and store files in specific folder for processing only this batch's files
+
+
                 foreach (var file in files)
                 {
-                    var pFile = file.Replace(dataPrefix, processingPrefix);
+                    var pFile = file.Replace(dataPrefix, batchProcessDir);
                     MoveFile(file, _connectionInfo.BucketName, pFile, _connectionInfo.BucketName);
                 }
 
@@ -315,7 +321,7 @@ namespace Chronos.AWS
                     .Replace("$DELIMETER$", delimiter)
                     .Replace("$HEADERROWS$", headerRowCount.ToString(CultureInfo.InvariantCulture))
                     .Replace("$COLUMNLIST$", string.Join(",", columnList))
-                    .Replace("$PATH$", processingPrefix);
+                    .Replace("$PATH$", batchProcessDir);
 
                 debugLog("Copying files to redshift");
                 using (var connection = new NpgsqlConnection(ConfigUtilities.GetConnectionString(connectionStringName)))
@@ -327,7 +333,7 @@ namespace Chronos.AWS
                 debugLog("Moving files to completed directory");
                 foreach (var file in files)
                 {
-                    var processedFile = file.Replace(dataPrefix, processingPrefix);
+                    var processedFile = file.Replace(dataPrefix, batchProcessDir);
                     var completeFile = file.Replace(dataPrefix, completedPrefix);
                     MoveFile(processedFile, _connectionInfo.BucketName, completeFile, _connectionInfo.BucketName);
                 }
@@ -336,13 +342,13 @@ namespace Chronos.AWS
             {
                 errorLog(exception, "Error in copy to redshift");
                 debugLog("Moving files to error directory");
-                var filesInProcessing = ListFiles(processingPrefix)
+                var filesInProcessing = ListFiles(batchProcessDir)
                     .Where(x => x.EndsWith(dataFileExtension))
                     .ToList();
 
                 foreach (var file in filesInProcessing)
                 {
-                    var errorFile = file.Replace(processingPrefix, errorPrefix);
+                    var errorFile = file.Replace(batchProcessDir, errorPrefix);
                     //var processedFile = Combine(processingPrefix, file);
                     MoveFile(file, _connectionInfo.BucketName, errorFile, _connectionInfo.BucketName);
                 }
