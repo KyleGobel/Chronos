@@ -300,7 +300,7 @@ namespace Chronos.AWS
             var batchProcessDir = S3.Combine(processingPrefix, batchId + "/");
             try
             {
-                debugLog(string.Format("Moving {0} files to {1}", files.Count, processingPrefix));
+                debugLog(string.Format("Moving {0} files to {1}", files.Count, batchProcessDir));
 
                 // create a batch id and store files in specific folder for processing only this batch's files
 
@@ -334,7 +334,7 @@ namespace Chronos.AWS
                 foreach (var file in files)
                 {
                     var processedFile = file.Replace(dataPrefix, batchProcessDir);
-                    var completeFile = file.Replace(dataPrefix, completedPrefix);
+                    var completeFile = file.Replace(dataPrefix, S3.Combine(completedPrefix, batchId + "/"));
                     MoveFile(processedFile, _connectionInfo.BucketName, completeFile, _connectionInfo.BucketName);
                 }
             }
@@ -348,7 +348,7 @@ namespace Chronos.AWS
 
                 foreach (var file in filesInProcessing)
                 {
-                    var errorFile = file.Replace(batchProcessDir, errorPrefix);
+                    var errorFile = file.Replace(batchProcessDir, Combine(errorPrefix,batchId + "/") );
                     //var processedFile = Combine(processingPrefix, file);
                     MoveFile(file, _connectionInfo.BucketName, errorFile, _connectionInfo.BucketName);
                 }
