@@ -205,7 +205,6 @@ namespace Chronos.AWS
             debugLog(string.Format("Getting files with extension {0} from {1}", dataFileExtension, dataPrefix));
             var files = ListFiles(dataPrefix)
                     .Where(x => x.EndsWith(dataFileExtension))
-                    .Take(100)
                     .ToList();
 
             if (files.Count == 0)
@@ -290,7 +289,6 @@ namespace Chronos.AWS
             debugLog(string.Format("Getting files with extension {0} from {1}", dataFileExtension, dataPrefix));
             var files = ListFiles(dataPrefix)
                     .Where(x => x.EndsWith(dataFileExtension))
-                    .Take(100)
                     .ToList();
 
             if (files.Count == 0)
