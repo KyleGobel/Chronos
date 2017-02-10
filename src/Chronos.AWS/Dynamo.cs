@@ -116,10 +116,10 @@ namespace Chronos.AWS
             return string.Empty;
         }
 
-        public void WriteSingle(string tableName, Dictionary<string,object> dictionary)
+        public PutItemResponse WriteSingle(string tableName, Dictionary<string,object> dictionary)
         {
             var transformDictionary = dictionary.ToDictionary(x => x.Key, x => GetAttributeValueFromObject(x.Value));
-            _client.PutItem(tableName, transformDictionary);
+            return _client.PutItem(tableName, transformDictionary);
         }
 
         public DeleteItemResponse DeleteSingle(string tableName, Dictionary<string, object> dictionary)
